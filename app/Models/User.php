@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'activo',
     ];
 
     /**
@@ -41,5 +42,22 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'activo' => 'boolean',
     ];
+
+    /**
+     * Relación con Proveedor
+     */
+    public function proveedor()
+    {
+        return $this->hasOne(Proveedor::class);
+    }
+
+    /**
+     * Relación con Cliente
+     */
+    public function cliente()
+    {
+        return $this->hasOne(Cliente::class);
+    }
 }

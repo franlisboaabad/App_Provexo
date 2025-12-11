@@ -39,7 +39,8 @@ class RoleSeeder extends Seeder
     {
         return [
             'Admin' => ['*'], // El admin tiene acceso a todo
-            'Colaborador' => ['admin.home'], // El colaborador solo tiene acceso al dashboard
+            'Proveedor' => ['admin.home'], // El proveedor solo tiene acceso al dashboard
+            'Cliente' => ['admin.home'], // El cliente solo tiene acceso al dashboard
         ];
     }
 
