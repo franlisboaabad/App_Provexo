@@ -326,6 +326,20 @@ return [
             'icon' => 'fas fa-user-shield',
             'can' => 'admin.roles.index',
         ],
+
+        ['header' => 'GESTIÓN'],
+        [
+            'text' => 'Proveedores',
+            'route' => 'admin.proveedores.index',
+            'icon' => 'fas fa-truck',
+            'can' => 'admin.proveedores.index',
+        ],
+        [
+            'text' => 'Clientes',
+            'route' => 'admin.clientes.index',
+            'icon' => 'fas fa-users-cog',
+            'can' => 'admin.clientes.index',
+        ],
         // [
         //     'text' => 'profile',
         //     'url'  => 'admin/settings',

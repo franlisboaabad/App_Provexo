@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Registrar Cliente')
+@section('title', 'Registrar Proveedor')
 
 @section('content_header')
-    <h1>Registrar Nuevo Cliente</h1>
+    <h1>Registrar Nuevo Proveedor</h1>
 @stop
 
 @section('content')
@@ -22,7 +22,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('admin.clientes.store') }}" method="POST">
+            <form action="{{ route('admin.proveedores.store') }}" method="POST">
                 @csrf
 
                 <div class="row">
@@ -148,9 +148,9 @@
 
                 <div class="form-group">
                     <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i> Registrar Cliente
+                        <i class="fas fa-save"></i> Registrar Proveedor
                     </button>
-                    <a href="{{ route('admin.clientes.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('admin.proveedores.index') }}" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Cancelar
                     </a>
                 </div>
@@ -165,6 +165,7 @@
 
 @section('js')
     <script>
-        console.log('Formulario de registro de cliente cargado');
+        console.log('Formulario de registro de proveedor cargado');
     </script>
 @stop
+

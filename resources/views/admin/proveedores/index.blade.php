@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Lista de Clientes')
+@section('title', 'Lista de Proveedores')
 
 @section('content_header')
-    <h1>Lista de Clientes</h1>
+    <h1>Lista de Proveedores</h1>
 @stop
 
 @section('content')
@@ -31,9 +31,9 @@
 
     <div class="card">
         <div class="card-header">
-            @can('admin.clientes.create')
-                <a href="{{ route('admin.clientes.create') }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Nuevo Cliente
+            @can('admin.proveedores.create')
+                <a href="{{ route('admin.proveedores.create') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Nuevo Proveedor
                 </a>
             @endcan
         </div>
@@ -51,36 +51,36 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($clientes as $cliente)
+                    @forelse ($proveedores as $proveedor)
                         <tr>
-                            <td>{{ $cliente->id }}</td>
-                            <td>{{ $cliente->user->name }}</td>
-                            <td>{{ $cliente->user->email }}</td>
-                            <td>{{ $cliente->celular ?? 'N/A' }}</td>
-                            <td>{{ $cliente->empresa ?? 'N/A' }}</td>
-                            <td>{{ $cliente->ruc ?? 'N/A' }}</td>
+                            <td>{{ $proveedor->id }}</td>
+                            <td>{{ $proveedor->user->name }}</td>
+                            <td>{{ $proveedor->user->email }}</td>
+                            <td>{{ $proveedor->celular ?? 'N/A' }}</td>
+                            <td>{{ $proveedor->empresa ?? 'N/A' }}</td>
+                            <td>{{ $proveedor->ruc ?? 'N/A' }}</td>
                             <td>
-                                @can('admin.clientes.show')
-                                    <a href="{{ route('admin.clientes.show', $cliente) }}"
+                                @can('admin.proveedores.show')
+                                    <a href="{{ route('admin.proveedores.show', $proveedor) }}"
                                        class="btn btn-info btn-sm"
                                        title="Ver">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 @endcan
 
-                                @can('admin.clientes.edit')
-                                    <a href="{{ route('admin.clientes.edit', $cliente) }}"
+                                @can('admin.proveedores.edit')
+                                    <a href="{{ route('admin.proveedores.edit', $proveedor) }}"
                                        class="btn btn-warning btn-sm"
                                        title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                 @endcan
 
-                                @can('admin.clientes.destroy')
-                                    <form action="{{ route('admin.clientes.destroy', $cliente) }}"
+                                @can('admin.proveedores.destroy')
+                                    <form action="{{ route('admin.proveedores.destroy', $proveedor) }}"
                                           method="POST"
                                           style="display: inline-block;"
-                                          onsubmit="return confirm('¿Está seguro de eliminar este cliente? Esta acción no se puede deshacer.');">
+                                          onsubmit="return confirm('¿Está seguro de eliminar este proveedor? Esta acción no se puede deshacer.');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
@@ -92,7 +92,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center">No hay clientes registrados</td>
+                            <td colspan="7" class="text-center">No hay proveedores registrados</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -113,3 +113,4 @@
         }, 5000);
     </script>
 @stop
+

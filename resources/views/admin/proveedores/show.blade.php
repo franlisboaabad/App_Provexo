@@ -1,21 +1,21 @@
 @extends('adminlte::page')
 
-@section('title', 'Detalle del Cliente')
+@section('title', 'Detalle del Proveedor')
 
 @section('content_header')
-    <h1>Detalle del Cliente</h1>
+    <h1>Detalle del Proveedor</h1>
 @stop
 
 @section('content')
     <div class="card">
         <div class="card-header">
             <div class="card-tools">
-                @can('admin.clientes.edit')
-                    <a href="{{ route('admin.clientes.edit', $cliente) }}" class="btn btn-warning btn-sm">
+                @can('admin.proveedores.edit')
+                    <a href="{{ route('admin.proveedores.edit', $proveedore) }}" class="btn btn-warning btn-sm">
                         <i class="fas fa-edit"></i> Editar
                     </a>
                 @endcan
-                <a href="{{ route('admin.clientes.index') }}" class="btn btn-secondary btn-sm">
+                <a href="{{ route('admin.proveedores.index') }}" class="btn btn-secondary btn-sm">
                     <i class="fas fa-arrow-left"></i> Volver
                 </a>
             </div>
@@ -28,20 +28,20 @@
                     <table class="table table-bordered">
                         <tr>
                             <th width="40%">ID:</th>
-                            <td>{{ $cliente->user->id }}</td>
+                            <td>{{ $proveedore->user->id }}</td>
                         </tr>
                         <tr>
                             <th>Nombre:</th>
-                            <td>{{ $cliente->user->name }}</td>
+                            <td>{{ $proveedore->user->name }}</td>
                         </tr>
                         <tr>
                             <th>Email:</th>
-                            <td>{{ $cliente->user->email }}</td>
+                            <td>{{ $proveedore->user->email }}</td>
                         </tr>
                         <tr>
                             <th>Estado:</th>
                             <td>
-                                @if($cliente->user->activo)
+                                @if($proveedore->user->activo)
                                     <span class="badge badge-success">Activo</span>
                                 @else
                                     <span class="badge badge-danger">Inactivo</span>
@@ -50,46 +50,46 @@
                         </tr>
                         <tr>
                             <th>Registrado:</th>
-                            <td>{{ $cliente->user->created_at->format('d/m/Y H:i') }}</td>
+                            <td>{{ $proveedore->user->created_at->format('d/m/Y H:i') }}</td>
                         </tr>
                         <tr>
                             <th>Última actualización:</th>
-                            <td>{{ $cliente->user->updated_at->format('d/m/Y H:i') }}</td>
+                            <td>{{ $proveedore->user->updated_at->format('d/m/Y H:i') }}</td>
                         </tr>
                     </table>
                 </div>
 
                 <div class="col-md-6">
-                    <h5>Información del Cliente</h5>
+                    <h5>Información del Proveedor</h5>
                     <hr>
                     <table class="table table-bordered">
                         <tr>
-                            <th width="40%">ID Cliente:</th>
-                            <td>{{ $cliente->id }}</td>
+                            <th width="40%">ID Proveedor:</th>
+                            <td>{{ $proveedore->id }}</td>
                         </tr>
                         <tr>
                             <th>Celular:</th>
-                            <td>{{ $cliente->celular ?? 'N/A' }}</td>
+                            <td>{{ $proveedore->celular ?? 'N/A' }}</td>
                         </tr>
                         <tr>
                             <th>Empresa:</th>
-                            <td>{{ $cliente->empresa ?? 'N/A' }}</td>
+                            <td>{{ $proveedore->empresa ?? 'N/A' }}</td>
                         </tr>
                         <tr>
                             <th>RUC:</th>
-                            <td>{{ $cliente->ruc ?? 'N/A' }}</td>
+                            <td>{{ $proveedore->ruc ?? 'N/A' }}</td>
                         </tr>
                         <tr>
                             <th>Roles:</th>
                             <td>
-                                @foreach($cliente->user->roles as $role)
+                                @foreach($proveedore->user->roles as $role)
                                     <span class="badge badge-primary">{{ $role->name }}</span>
                                 @endforeach
                             </td>
                         </tr>
                         <tr>
                             <th>Creado:</th>
-                            <td>{{ $cliente->created_at->format('d/m/Y H:i') }}</td>
+                            <td>{{ $proveedore->created_at->format('d/m/Y H:i') }}</td>
                         </tr>
                     </table>
                 </div>
@@ -104,6 +104,7 @@
 
 @section('js')
     <script>
-        console.log('Vista de detalle de cliente cargada');
+        console.log('Vista de detalle de proveedor cargada');
     </script>
 @stop
+

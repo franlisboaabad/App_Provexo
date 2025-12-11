@@ -29,6 +29,20 @@ class RoleSeeder extends Seeder
                 'admin.usuarios.edit' => 'Editar usuario',
                 'admin.usuarios.update' => 'Actualizar usuario y asignar roles',
             ],
+            'proveedores' => [
+                'admin.proveedores.index' => 'Lista de proveedores',
+                'admin.proveedores.create' => 'Registrar proveedor',
+                'admin.proveedores.edit' => 'Editar proveedor',
+                'admin.proveedores.show' => 'Ver proveedor',
+                'admin.proveedores.destroy' => 'Eliminar proveedor',
+            ],
+            'clientes' => [
+                'admin.clientes.index' => 'Lista de clientes',
+                'admin.clientes.create' => 'Registrar cliente',
+                'admin.clientes.edit' => 'Editar cliente',
+                'admin.clientes.show' => 'Ver cliente',
+                'admin.clientes.destroy' => 'Eliminar cliente',
+            ],
         ];
     }
 
@@ -39,8 +53,16 @@ class RoleSeeder extends Seeder
     {
         return [
             'Admin' => ['*'], // El admin tiene acceso a todo
-            'Proveedor' => ['admin.home'], // El proveedor solo tiene acceso al dashboard
-            'Cliente' => ['admin.home'], // El cliente solo tiene acceso al dashboard
+            'Proveedor' => [
+                'admin.home',
+                'admin.proveedores.index',
+                'admin.proveedores.show',
+            ],
+            'Cliente' => [
+                'admin.home',
+                'admin.clientes.index',
+                'admin.clientes.show',
+            ],
         ];
     }
 

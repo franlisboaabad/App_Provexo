@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +37,10 @@ Route::middleware('auth')->group(function () {
     // Administración de usuarios y roles
     Route::resource('usuarios', UserController::class)->names('admin.usuarios');
     Route::resource('roles', RoleController::class)->names('admin.roles');
+
+    // Administración de proveedores y clientes
+    Route::resource('proveedores', ProveedorController::class)->names('admin.proveedores');
+    Route::resource('clientes', ClienteController::class)->names('admin.clientes');
 });
 
 
