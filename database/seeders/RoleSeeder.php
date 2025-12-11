@@ -43,6 +43,13 @@ class RoleSeeder extends Seeder
                 'admin.clientes.show' => 'Ver cliente',
                 'admin.clientes.destroy' => 'Eliminar cliente',
             ],
+            'productos' => [
+                'admin.productos.index' => 'Lista de productos',
+                'admin.productos.create' => 'Registrar producto',
+                'admin.productos.edit' => 'Editar producto',
+                'admin.productos.show' => 'Ver producto',
+                'admin.productos.destroy' => 'Eliminar producto',
+            ],
         ];
     }
 
@@ -57,6 +64,10 @@ class RoleSeeder extends Seeder
                 'admin.home',
                 'admin.proveedores.index',
                 'admin.proveedores.show',
+                'admin.productos.index',
+                'admin.productos.create',
+                'admin.productos.edit',
+                'admin.productos.show',
             ],
             'Cliente' => [
                 'admin.home',

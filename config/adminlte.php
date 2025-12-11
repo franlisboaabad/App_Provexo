@@ -340,6 +340,12 @@ return [
             'icon' => 'fas fa-users-cog',
             'can' => 'admin.clientes.index',
         ],
+        [
+            'text' => 'Productos',
+            'route' => 'admin.productos.index',
+            'icon' => 'fas fa-box',
+            'can' => 'admin.productos.index',
+        ],
         // [
         //     'text' => 'profile',
         //     'url'  => 'admin/settings',
