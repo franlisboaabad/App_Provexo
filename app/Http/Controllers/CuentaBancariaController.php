@@ -14,6 +14,9 @@ class CuentaBancariaController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware('can:admin.cuentas.store')->only('store');
+        $this->middleware('can:admin.cuentas.update')->only('update');
+        $this->middleware('can:admin.cuentas.destroy')->only('destroy');
     }
 
     /**

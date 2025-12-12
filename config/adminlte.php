@@ -311,6 +311,41 @@ return [
             'text' => 'Dashboard',
             'route' => 'dashboard',
             'icon' => 'fas fa-tachometer-alt',
+            'can' => 'admin.home',
+        ],
+
+        ['header' => 'VENTAS'],
+        [
+            'text' => 'Cotizaciones',
+            'route' => 'admin.cotizaciones.index',
+            'icon' => 'fas fa-file-invoice-dollar',
+            'can' => 'admin.cotizaciones.index',
+        ],
+
+        ['header' => 'GESTIÓN'],
+        [
+            'text' => 'Clientes',
+            'route' => 'admin.clientes.index',
+            'icon' => 'fas fa-users-cog',
+            'can' => 'admin.clientes.index',
+        ],
+        [
+            'text' => 'Productos',
+            'route' => 'admin.productos.index',
+            'icon' => 'fas fa-box',
+            'can' => 'admin.productos.index',
+        ],
+        [
+            'text' => 'Proveedores',
+            'route' => 'admin.proveedores.index',
+            'icon' => 'fas fa-truck',
+            'can' => 'admin.proveedores.index',
+        ],
+        [
+            'text' => 'Empresas',
+            'route' => 'admin.empresas.index',
+            'icon' => 'fas fa-building',
+            'can' => 'admin.empresas.index',
         ],
 
         ['header' => 'ADMINISTRACIÓN'],
@@ -326,88 +361,6 @@ return [
             'icon' => 'fas fa-user-shield',
             'can' => 'admin.roles.index',
         ],
-
-        ['header' => 'GESTIÓN'],
-        [
-            'text' => 'Proveedores',
-            'route' => 'admin.proveedores.index',
-            'icon' => 'fas fa-truck',
-            'can' => 'admin.proveedores.index',
-        ],
-        [
-            'text' => 'Clientes',
-            'route' => 'admin.clientes.index',
-            'icon' => 'fas fa-users-cog',
-            'can' => 'admin.clientes.index',
-        ],
-        [
-            'text' => 'Productos',
-            'route' => 'admin.productos.index',
-            'icon' => 'fas fa-box',
-            'can' => 'admin.productos.index',
-        ],
-        [
-            'text' => 'Empresas',
-            'route' => 'admin.empresas.index',
-            'icon' => 'fas fa-building',
-            'can' => 'admin.empresas.index',
-        ],
-
-        ['header' => 'VENTAS'],
-        [
-            'text' => 'Cotizaciones',
-            'route' => 'admin.cotizaciones.index',
-            'icon' => 'fas fa-file-invoice-dollar',
-            'can' => 'admin.cotizaciones.index',
-        ],
-        // [
-        //     'text' => 'profile',
-        //     'url'  => 'admin/settings',
-        //     'icon' => 'fas fa-fw fa-user',
-        // ],
-        // [
-        //     'text' => 'change_password',
-        //     'url'  => 'admin/settings',
-        //     'icon' => 'fas fa-fw fa-lock',
-        // ],
-        // [
-        //     'text'    => 'multilevel',
-        //     'icon'    => 'fas fa-fw fa-share',
-        //     'submenu' => [
-        //         [
-        //             'text' => 'level_one',
-        //             'url'  => '#',
-        //         ],
-        //         [
-        //             'text'    => 'level_one',
-        //             'url'     => '#',
-        //             'submenu' => [
-        //                 [
-        //                     'text' => 'level_two',
-        //                     'url'  => '#',
-        //                 ],
-        //                 [
-        //                     'text'    => 'level_two',
-        //                     'url'     => '#',
-        //                     'submenu' => [
-        //                         [
-        //                             'text' => 'level_three',
-        //                             'url'  => '#',
-        //                         ],
-        //                         [
-        //                             'text' => 'level_three',
-        //                             'url'  => '#',
-        //                         ],
-        //                     ],
-        //                 ],
-        //             ],
-        //         ],
-        //         [
-        //             'text' => 'level_one',
-        //             'url'  => '#',
-        //         ],
-        //     ],
-        // ],
 
     ],
 

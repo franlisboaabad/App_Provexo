@@ -14,6 +14,9 @@ class SerieCotizacionController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware('can:admin.series.store')->only('store');
+        $this->middleware('can:admin.series.update')->only('update');
+        $this->middleware('can:admin.series.destroy')->only('destroy');
     }
 
     /**

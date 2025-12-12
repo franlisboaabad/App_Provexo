@@ -17,9 +17,12 @@ class UserController extends Controller
 
     public function __construct()
     {
-
+        $this->middleware('auth');
         $this->middleware('can:admin.usuarios.index')->only('index');
-        $this->middleware('can:admin.usuarios.edit')->only('edit','update');
+        $this->middleware('can:admin.usuarios.create')->only('create', 'store');
+        $this->middleware('can:admin.usuarios.edit')->only('edit', 'update');
+        $this->middleware('can:admin.usuarios.show')->only('show');
+        $this->middleware('can:admin.usuarios.destroy')->only('destroy');
 
     }
 

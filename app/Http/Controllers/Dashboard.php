@@ -2,14 +2,66 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Cotizacion;
+use App\Models\Producto;
+use App\Models\Cliente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class Dashboard extends Controller
 {
-    //
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('can:admin.home')->only('home');
+    }
 
     public function home()
     {
-        return view('dashboard');
+        // Estadísticas principales
+        $usuariosActivos = User::where('activo', true)->count();
+        $cotizacionesPendientes = Cotizacion::pendientes()->count();
+        $totalCotizaciones = Cotizacion::count();
+        $totalProductos = Producto::activos()->count();
+
+        // Actividad semanal (últimos 7 días)
+        $actividadSemanal = [];
+        $diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $fecha = Carbon::now()->subDays($i);
+            $diaSemana = $diasSemana[$fecha->dayOfWeek];
+
+            $actividadSemanal[] = [
+                'dia' => $diaSemana,
+                'cotizaciones' => Cotizacion::whereDate('created_at', $fecha->format('Y-m-d'))->count(),
+                'productos' => Producto::whereDate('created_at', $fecha->format('Y-m-d'))->count(),
+                'usuarios' => User::whereDate('created_at', $fecha->format('Y-m-d'))->count(),
+            ];
+        }
+
+        // Cotizaciones recientes (últimas 5)
+        $cotizacionesRecientes = Cotizacion::with('cliente.user')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        // Productos recientes (últimos 5)
+        $productosRecientes = Producto::with('proveedor.user')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        return view('dashboard', compact(
+            'usuariosActivos',
+            'cotizacionesPendientes',
+            'totalCotizaciones',
+            'totalProductos',
+            'actividadSemanal',
+            'cotizacionesRecientes',
+            'productosRecientes'
+        ));
     }
 }

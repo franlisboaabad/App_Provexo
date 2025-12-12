@@ -24,6 +24,8 @@ class CotizacionController extends Controller
         $this->middleware('can:admin.cotizaciones.create')->only('create', 'store');
         $this->middleware('can:admin.cotizaciones.edit')->only('edit', 'update');
         $this->middleware('can:admin.cotizaciones.show')->only('show', 'pdf');
+        $this->middleware('can:admin.cotizaciones.publica')->only('publica');
+        $this->middleware('can:admin.cotizaciones.enviar-email')->only('enviarEmail');
         $this->middleware('can:admin.cotizaciones.destroy')->only('destroy');
     }
 

@@ -22,12 +22,16 @@ class RoleSeeder extends Seeder
                 'admin.roles.index' => 'Lista de roles',
                 'admin.roles.create' => 'Registrar rol',
                 'admin.roles.edit' => 'Editar rol',
+                'admin.roles.show' => 'Ver rol',
                 'admin.roles.destroy' => 'Eliminar rol',
             ],
             'usuarios' => [
                 'admin.usuarios.index' => 'Lista de usuarios',
+                'admin.usuarios.create' => 'Crear usuario',
                 'admin.usuarios.edit' => 'Editar usuario',
+                'admin.usuarios.show' => 'Ver usuario',
                 'admin.usuarios.update' => 'Actualizar usuario y asignar roles',
+                'admin.usuarios.destroy' => 'Eliminar usuario',
             ],
             'proveedores' => [
                 'admin.proveedores.index' => 'Lista de proveedores',
@@ -49,6 +53,7 @@ class RoleSeeder extends Seeder
                 'admin.productos.edit' => 'Editar producto',
                 'admin.productos.show' => 'Ver producto',
                 'admin.productos.destroy' => 'Eliminar producto',
+                'admin.productos.import' => 'Importar productos',
             ],
             'cotizaciones' => [
                 'admin.cotizaciones.index' => 'Lista de cotizaciones',
@@ -56,6 +61,9 @@ class RoleSeeder extends Seeder
                 'admin.cotizaciones.edit' => 'Editar cotización',
                 'admin.cotizaciones.show' => 'Ver cotización',
                 'admin.cotizaciones.destroy' => 'Eliminar cotización',
+                'admin.cotizaciones.pdf' => 'Ver PDF de cotización',
+                'admin.cotizaciones.publica' => 'Generar URL pública de cotización',
+                'admin.cotizaciones.enviar-email' => 'Enviar cotización por email',
             ],
             'empresas' => [
                 'admin.empresas.index' => 'Lista de empresas',
@@ -63,6 +71,16 @@ class RoleSeeder extends Seeder
                 'admin.empresas.edit' => 'Editar empresa',
                 'admin.empresas.show' => 'Ver empresa',
                 'admin.empresas.destroy' => 'Eliminar empresa',
+            ],
+            'series_cotizacion' => [
+                'admin.series.store' => 'Crear serie de cotización',
+                'admin.series.update' => 'Actualizar serie de cotización',
+                'admin.series.destroy' => 'Eliminar serie de cotización',
+            ],
+            'cuentas_bancarias' => [
+                'admin.cuentas.store' => 'Crear cuenta bancaria',
+                'admin.cuentas.update' => 'Actualizar cuenta bancaria',
+                'admin.cuentas.destroy' => 'Eliminar cuenta bancaria',
             ],
         ];
     }
