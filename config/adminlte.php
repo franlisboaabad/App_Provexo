@@ -325,7 +325,7 @@ return [
             'text' => 'Cotizaciones',
             'route' => 'admin.cotizaciones.index',
             'icon' => 'fas fa-file-invoice-dollar',
-            'can' => 'admin.cotizaciones.index',
+            // Los clientes pueden ver sus cotizaciones, los admin también
         ],
 
         ['header' => 'GESTIÓN'],

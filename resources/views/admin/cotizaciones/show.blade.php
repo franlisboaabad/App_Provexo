@@ -164,7 +164,7 @@
                         $totalCostoFlete = $productosConFlete->sum('costo_mas_flete') ?? 0;
                     @endphp
 
-                    @if($tieneFletes)
+                    @if($tieneFletes && !auth()->user()->hasRole('Cliente'))
                         <hr>
                         <h5><i class="fas fa-truck"></i> Resumen de Fletes y Margen</h5>
                         <div class="row mt-3">

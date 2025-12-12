@@ -6,6 +6,10 @@
     --provexo-naranja-hover: #ff8559;
 }
 
+body{
+    background-color: #f9f9f9 !important;
+}
+
 /* Sidebar personalizado con colores de Provexo - Azul oscuro como fondo */
 .sidebar-dark-primary {
     background-color: var(--provexo-azul-oscuro) !important;

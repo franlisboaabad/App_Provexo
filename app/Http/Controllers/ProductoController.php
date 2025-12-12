@@ -17,7 +17,7 @@ class ProductoController extends Controller
     {
         $this->middleware('auth');
         $this->middleware('can:admin.productos.index')->only('index');
-        $this->middleware('can:admin.productos.create')->only('create', 'store', 'import');
+        $this->middleware('can:admin.productos.create')->only('create', 'store', 'storeAjax', 'import');
         $this->middleware('can:admin.productos.edit')->only('edit', 'update');
         $this->middleware('can:admin.productos.show')->only('show', 'historialPrecios');
         $this->middleware('can:admin.productos.destroy')->only('destroy');
@@ -97,6 +97,67 @@ class ProductoController extends Controller
             return back()
                 ->withInput()
                 ->withErrors(['error' => 'Error al crear producto. Intente nuevamente.']);
+        }
+    }
+
+    /**
+     * Store a newly created product via AJAX (for modal in quotations)
+     */
+    public function storeAjax(Request $request)
+    {
+        $validated = $request->validate([
+            'proveedor_id' => ['nullable', 'exists:proveedores,id'],
+            'codigo_producto' => ['required', 'string', 'max:100', 'unique:productos,codigo_producto'],
+            'descripcion' => ['required', 'string', 'max:255'],
+            'precio_base' => ['required', 'numeric', 'min:0'],
+            'precio_venta' => ['required', 'numeric', 'min:0'],
+            'impuesto' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'stock' => ['nullable', 'integer', 'min:0'],
+            'unidad_medida' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        try {
+            $producto = DB::transaction(function () use ($validated, $request) {
+                return Producto::create([
+                    'proveedor_id' => $validated['proveedor_id'] ?? null,
+                    'codigo_producto' => $validated['codigo_producto'],
+                    'descripcion' => $validated['descripcion'],
+                    'precio_base' => $validated['precio_base'],
+                    'precio_venta' => $validated['precio_venta'],
+                    'impuesto' => $validated['impuesto'] ?? 0,
+                    'stock' => $validated['stock'] ?? 0,
+                    'unidad_medida' => $validated['unidad_medida'] ?? 'unidad',
+                    'activo' => true,
+                ]);
+            });
+
+            Log::info('Producto creado vía AJAX', ['producto_id' => $producto->id]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Producto creado exitosamente',
+                'producto' => [
+                    'id' => $producto->id,
+                    'codigo_producto' => $producto->codigo_producto,
+                    'descripcion' => $producto->descripcion,
+                    'precio_base' => $producto->precio_base,
+                    'precio_venta' => $producto->precio_venta,
+                    'impuesto' => $producto->impuesto,
+                    'stock' => $producto->stock,
+                    'unidad_medida' => $producto->unidad_medida,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al crear producto vía AJAX', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear producto: ' . $e->getMessage(),
+                'errors' => $e->getMessage()
+            ], 422);
         }
     }
 

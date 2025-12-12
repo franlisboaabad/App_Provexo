@@ -30,12 +30,26 @@
     @endif
 
     <div class="card">
-        <div class="card-header">
-            @can('admin.cotizaciones.create')
-                <a href="{{ route('admin.cotizaciones.create') }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Nueva Cotización
-                </a>
-            @endcan
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                @can('admin.cotizaciones.create')
+                    <a href="{{ route('admin.cotizaciones.create') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Nueva Cotización
+                    </a>
+                @endcan
+            </div>
+            <div class="d-flex align-items-center">
+                <label for="filtroEstado" class="mb-0 mr-2">
+                    <strong>Filtrar por Estado:</strong>
+                </label>
+                <select class="form-control form-control-sm" id="filtroEstado" style="width: auto; min-width: 150px;">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente" {{ request('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                    <option value="aprobada" {{ request('estado') == 'aprobada' ? 'selected' : '' }}>Aprobada</option>
+                    <option value="rechazada" {{ request('estado') == 'rechazada' ? 'selected' : '' }}>Rechazada</option>
+                    <option value="vencida" {{ request('estado') == 'vencida' ? 'selected' : '' }}>Vencida</option>
+                </select>
+            </div>
         </div>
         <div class="card-body">
             <table id="cotizacionesTable" class="table table-bordered table-striped table-hover">
@@ -172,6 +186,7 @@
                                 </div>
                             </div>
 
+                            @if(!auth()->user()->hasRole('Cliente'))
                             <!-- Enviar por Email -->
                             <div class="card mb-3">
                                 <div class="card-body">
@@ -237,6 +252,7 @@
                                     <div id="alertWhatsAppModal" class="mt-2"></div>
                                 </div>
                             </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -297,6 +313,34 @@
                     { "orderable": false, "targets": 6 } // Estado no ordenable
                 ]
             });
+
+            // Filtro por estado
+            $.fn.dataTable.ext.search.push(
+                function(settings, data, dataIndex) {
+                    var estadoFiltro = $('#filtroEstado').val();
+                    
+                    // Si no hay filtro, mostrar todas las filas
+                    if (!estadoFiltro) {
+                        return true;
+                    }
+                    
+                    // Obtener el valor del select en la columna de estado (índice 6)
+                    var estadoFila = $(table.row(dataIndex).node()).find('.cambiar-estado').val() || 
+                                    $(table.row(dataIndex).node()).find('td:eq(6)').text().toLowerCase();
+                    
+                    // Comparar estados
+                    return estadoFila === estadoFiltro || estadoFila.toLowerCase().includes(estadoFiltro.toLowerCase());
+                }
+            );
+
+            $('#filtroEstado').on('change', function() {
+                table.draw();
+            });
+
+            // Aplicar filtro inicial si hay un estado en la URL
+            @if(request('estado'))
+                $('#filtroEstado').val('{{ request('estado') }}').trigger('change');
+            @endif
 
             // Cambiar estado de cotización
             $(document).on('change', '.cambiar-estado', function() {
@@ -411,11 +455,24 @@
             // Actualizar el enlace de descarga
             document.getElementById('btn-descargar-pdf').href = pdfUrl;
 
-            // Limpiar formularios
-            document.getElementById('formEnviarEmailModal').reset();
-            document.getElementById('formEnviarWhatsAppModal').reset();
-            document.getElementById('alertEmailModal').innerHTML = '';
-            document.getElementById('alertWhatsAppModal').innerHTML = '';
+            // Limpiar formularios (solo si existen - para clientes no existen)
+            const formEmail = document.getElementById('formEnviarEmailModal');
+            const formWhatsApp = document.getElementById('formEnviarWhatsAppModal');
+            const alertEmail = document.getElementById('alertEmailModal');
+            const alertWhatsApp = document.getElementById('alertWhatsAppModal');
+            
+            if (formEmail) {
+                formEmail.reset();
+            }
+            if (formWhatsApp) {
+                formWhatsApp.reset();
+            }
+            if (alertEmail) {
+                alertEmail.innerHTML = '';
+            }
+            if (alertWhatsApp) {
+                alertWhatsApp.innerHTML = '';
+            }
 
             // Abrir el modal
             $('#modalPreviewCotizacion').modal('show');

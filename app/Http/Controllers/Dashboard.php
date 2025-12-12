@@ -15,11 +15,40 @@ class Dashboard extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('can:admin.home')->only('home');
     }
 
-    public function home()
+    public function home(Request $request)
     {
+        $user = $request->user();
+
+        // Si el usuario es Cliente, mostrar dashboard simplificado
+        if ($user->hasRole('Cliente')) {
+            $cliente = $user->cliente;
+            
+            if (!$cliente) {
+                // Si no tiene perfil de cliente, redirigir al perfil
+                return redirect()->route('profile.edit')
+                    ->with('warning', 'Por favor completa tu perfil de cliente.');
+            }
+
+            // Contar solo las cotizaciones del cliente
+            $totalCotizaciones = Cotizacion::where('cliente_id', $cliente->id)->count();
+            $cotizacionesPendientes = Cotizacion::where('cliente_id', $cliente->id)
+                ->where('estado', 'pendiente')
+                ->count();
+
+            return view('dashboard-cliente', compact(
+                'totalCotizaciones',
+                'cotizacionesPendientes'
+            ));
+        }
+
+        // Dashboard completo para administradores
+        // Verificar permiso
+        if (!$user->can('admin.home')) {
+            abort(403, 'No tienes permiso para acceder al dashboard.');
+        }
+
         // Estadísticas principales
         $usuariosActivos = User::where('activo', true)->count();
         $cotizacionesPendientes = Cotizacion::pendientes()->count();

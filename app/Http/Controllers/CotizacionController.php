@@ -22,10 +22,9 @@ class CotizacionController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('can:admin.cotizaciones.index')->only('index');
+        // Los clientes pueden ver sus propias cotizaciones, pero no crear/editar
         $this->middleware('can:admin.cotizaciones.create')->only('create', 'store');
         $this->middleware('can:admin.cotizaciones.edit')->only('edit', 'update', 'cambiarEstado');
-        $this->middleware('can:admin.cotizaciones.show')->only('show', 'pdf');
         $this->middleware('can:admin.cotizaciones.publica')->only('publica');
         $this->middleware('can:admin.cotizaciones.enviar-email')->only('enviarEmail');
         $this->middleware('can:admin.cotizaciones.destroy')->only('destroy');
@@ -34,11 +33,45 @@ class CotizacionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        Log::info('Listando cotizaciones');
+        $user = $request->user();
+        
+        Log::info('Listando cotizaciones', ['user_id' => $user->id, 'role' => $user->roles->pluck('name')->toArray()]);
 
-        $cotizaciones = Cotizacion::with('cliente.user', 'productos.producto')->latest()->get();
+        // Si el usuario es Cliente, mostrar solo sus cotizaciones
+        if ($user->hasRole('Cliente')) {
+            $cliente = $user->cliente;
+            
+            if (!$cliente) {
+                return redirect()->route('profile.edit')
+                    ->with('warning', 'Por favor completa tu perfil de cliente.');
+            }
+
+            $query = Cotizacion::where('cliente_id', $cliente->id)
+                ->with('cliente.user', 'productos.producto');
+
+            // Filtrar por estado si se proporciona
+            if ($request->has('estado') && $request->estado) {
+                $query->where('estado', $request->estado);
+            }
+
+            $cotizaciones = $query->latest()->get();
+        } else {
+            // Para administradores, mostrar todas las cotizaciones
+            if (!$user->can('admin.cotizaciones.index')) {
+                abort(403, 'No tienes permiso para ver cotizaciones.');
+            }
+
+            $query = Cotizacion::with('cliente.user', 'productos.producto');
+
+            // Filtrar por estado si se proporciona
+            if ($request->has('estado') && $request->estado) {
+                $query->where('estado', $request->estado);
+            }
+
+            $cotizaciones = $query->latest()->get();
+        }
 
         return view('admin.cotizaciones.index', compact('cotizaciones'));
     }
@@ -232,8 +265,24 @@ class CotizacionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Cotizacion $cotizacione)
+    public function show(Request $request, Cotizacion $cotizacione)
     {
+        $user = $request->user();
+        
+        // Si el usuario es Cliente, verificar que la cotización sea suya
+        if ($user->hasRole('Cliente')) {
+            $cliente = $user->cliente;
+            
+            if (!$cliente || $cotizacione->cliente_id !== $cliente->id) {
+                abort(403, 'No tienes permiso para ver esta cotización.');
+            }
+        } else {
+            // Para administradores, verificar permiso
+            if (!$user->can('admin.cotizaciones.show')) {
+                abort(403, 'No tienes permiso para ver cotizaciones.');
+            }
+        }
+
         $cotizacione->load('cliente.user', 'productos.producto');
         return view('admin.cotizaciones.show', compact('cotizacione'));
     }
@@ -469,8 +518,24 @@ class CotizacionController extends Controller
     /**
      * Generar PDF de la cotización
      */
-    public function pdf(Cotizacion $cotizacione)
+    public function pdf(Request $request, Cotizacion $cotizacione)
     {
+        $user = $request->user();
+        
+        // Si el usuario es Cliente, verificar que la cotización sea suya
+        if ($user->hasRole('Cliente')) {
+            $cliente = $user->cliente;
+            
+            if (!$cliente || $cotizacione->cliente_id !== $cliente->id) {
+                abort(403, 'No tienes permiso para descargar esta cotización.');
+            }
+        } else {
+            // Para administradores, verificar permiso
+            if (!$user->can('admin.cotizaciones.show')) {
+                abort(403, 'No tienes permiso para descargar cotizaciones.');
+            }
+        }
+
         Log::info('Generando PDF de cotización', ['cotizacion_id' => $cotizacione->id]);
 
         try {

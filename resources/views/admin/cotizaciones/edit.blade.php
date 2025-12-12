@@ -54,11 +54,15 @@
                                             <strong>{{ $message }}</strong>
                                         </span>
                                     @enderror
-                                    <small class="form-text text-muted">
-                                        <a href="#" class="text-primary" data-toggle="modal" data-target="#modalNuevoCliente">
-                                            <i class="fas fa-plus-circle"></i> Nuevo Cliente +
-                                        </a>
-                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-auto">
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#modalNuevoCliente">
+                                        <i class="fas fa-plus-circle"></i> Nuevo Cliente
+                                    </button>
                                 </div>
                             </div>
 
@@ -135,44 +139,26 @@
                     </div>
                 </div>
 
-                <!-- Buscador y Agregar Productos -->
-                <div class="card mt-3">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Agregar Productos</h5>
-                        <span class="badge badge-primary" id="contador-productos">0 productos</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <div class="col-md-12 position-relative">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                    </div>
-                                    <input type="text"
-                                           class="form-control form-control-lg"
-                                           id="buscador-productos"
-                                           placeholder="Buscar producto por código o descripción... (presiona Enter para agregar rápido)">
-                                    <div class="input-group-append">
-                                        <button type="button" class="btn btn-primary" onclick="abrirModalProductos()">
-                                            <i class="fas fa-list"></i> Ver Todos
-                                        </button>
-                                    </div>
-                                </div>
-                                <div id="resultados-busqueda" class="list-group position-absolute" style="z-index: 1050; display: none; max-height: 300px; overflow-y: auto; width: 100%; top: 100%; margin-top: 2px; left: 0;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Tabla de Productos -->
                 <div class="card mt-3">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5>Productos de la Cotización</h5>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="limpiarProductos()">
-                            <i class="fas fa-trash"></i> Limpiar Todo
-                        </button>
+                        <h5><i class="fas fa-shopping-cart"></i> Productos de la Cotización</h5>
+                        <span class="badge badge-primary" id="contador-productos">0 productos</span>
                     </div>
-                    <div class="card-body p-0">
+                    <div class="card-body pb-2">
+                        <div class="d-flex gap-2 mb-3 flex-wrap">
+                            <button type="button" class="btn btn-success btn-sm mr-2" onclick="abrirModalProductos()">
+                                <i class="fas fa-plus-circle"></i> Agregar Producto
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm mr-2" onclick="abrirModalNuevoProducto()">
+                                <i class="fas fa-box"></i> Nuevo Producto
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm mr-2" onclick="limpiarProductos()">
+                                <i class="fas fa-trash"></i> Limpiar Todo
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0 p-0">
                         <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                             <table class="table table-hover table-bordered mb-0" id="tabla-productos">
                                 <thead class="thead-light sticky-top">
@@ -379,26 +365,26 @@
                 <div class="modal-body">
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i>
-                        <strong>Instrucciones:</strong> Complete los campos de Peso x Unidad, Flete x Tonelada y % Margen para cada producto. 
+                        <strong>Instrucciones:</strong> Complete los campos de Peso x Unidad, Flete x Tonelada y % Margen para cada producto.
                         Los cálculos se realizarán automáticamente.
                     </div>
                     <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                        <table class="table table-bordered table-sm" id="tabla-fletes">
+                        <table class="table table-bordered" id="tabla-fletes">
                             <thead class="thead-light sticky-top">
                                 <tr>
-                                    <th width="5%">#</th>
-                                    <th width="15%">Código</th>
-                                    <th width="20%">Descripción</th>
-                                    <th width="8%" class="text-center">Cantidad</th>
-                                    <th width="10%" class="text-right">Precio Base</th>
-                                    <th width="10%" class="text-center">Peso x Unidad (kg)</th>
-                                    <th width="10%" class="text-center">Flete x Tonelada (S/)</th>
-                                    <th width="10%" class="text-center">% Margen</th>
-                                    <th width="12%" class="text-right">Flete Unit.</th>
-                                    <th width="12%" class="text-right">Costo + Flete</th>
-                                    <th width="12%" class="text-right">Total KG</th>
-                                    <th width="12%" class="text-right">Margen Total</th>
-                                    <th width="12%" class="text-right">Flete Total (S/)</th>
+                                    <th width="4%" class="text-center">#</th>
+                                    <th width="10%">Código</th>
+                                    <th width="15%">Descripción</th>
+                                    <th width="6%" class="text-center">Cant.</th>
+                                    <th width="9%" class="text-right">Precio Unit.</th>
+                                    <th width="9%" class="text-center">Peso x Unidad (kg)</th>
+                                    <th width="9%" class="text-center">Flete x Ton. (S/)</th>
+                                    <th width="8%" class="text-center">% Margen</th>
+                                    <th width="9%" class="text-right">Flete Unit.</th>
+                                    <th width="9%" class="text-right">Costo + Flete</th>
+                                    <th width="8%" class="text-right">Total KG</th>
+                                    <th width="9%" class="text-right">Margen Total</th>
+                                    <th width="9%" class="text-right">Flete Total (S/)</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody-fletes">
@@ -525,6 +511,157 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal para Nuevo Producto -->
+    <div class="modal fade" id="modalNuevoProducto" tabindex="-1" role="dialog" aria-labelledby="modalNuevoProductoLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="modalNuevoProductoLabel">
+                        <i class="fas fa-box"></i> Registrar Nuevo Producto
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="formNuevoProducto">
+                    @csrf
+                    <div class="modal-body">
+                        <div id="alertNuevoProducto"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nuevo_proveedor_id">Proveedor</label>
+                                    <select class="form-control" id="nuevo_proveedor_id" name="proveedor_id">
+                                        <option value="">Seleccione un proveedor (Opcional)</option>
+                                        @foreach(\App\Models\Proveedor::all() as $proveedor)
+                                            <option value="{{ $proveedor->id }}">
+                                                {{ $proveedor->nombre }} {{ $proveedor->empresa ? '- ' . $proveedor->empresa : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nuevo_codigo_producto">Código del Producto <span class="text-danger">*</span></label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="nuevo_codigo_producto"
+                                           name="codigo_producto"
+                                           required
+                                           autofocus>
+                                    <small class="form-text text-muted">Código único del producto</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nuevo_descripcion">Descripción <span class="text-danger">*</span></label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="nuevo_descripcion"
+                                   name="descripcion"
+                                   required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="nuevo_precio_base">Precio Base (Costo) <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">S/</span>
+                                        </div>
+                                        <input type="number"
+                                               class="form-control"
+                                               id="nuevo_precio_base"
+                                               name="precio_base"
+                                               step="0.01"
+                                               min="0"
+                                               required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="nuevo_precio_venta">Precio de Venta <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">S/</span>
+                                        </div>
+                                        <input type="number"
+                                               class="form-control"
+                                               id="nuevo_precio_venta"
+                                               name="precio_venta"
+                                               step="0.01"
+                                               min="0"
+                                               required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="nuevo_impuesto">Impuesto/IVA (%)</label>
+                                    <div class="input-group">
+                                        <input type="number"
+                                               class="form-control"
+                                               id="nuevo_impuesto"
+                                               name="impuesto"
+                                               value="0"
+                                               step="0.01"
+                                               min="0"
+                                               max="100">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nuevo_stock">Stock</label>
+                                    <input type="number"
+                                           class="form-control"
+                                           id="nuevo_stock"
+                                           name="stock"
+                                           value="0"
+                                           min="0">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nuevo_unidad_medida">Unidad de Medida</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="nuevo_unidad_medida"
+                                           name="unidad_medida"
+                                           value="unidad"
+                                           placeholder="Ej: unidad, kg, m">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Guardar y Agregar a Cotización
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @stop
 
 @section('css')
@@ -576,6 +713,45 @@
         }
         .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 36px;
+        }
+        /* Alineación del botón Nuevo Cliente */
+        .col-md-auto .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .col-md-auto .form-group label {
+            height: 20px;
+            margin-bottom: 0.5rem;
+        }
+        .col-md-auto .form-group button {
+            margin-top: 0;
+            height: 38px;
+            align-self: flex-start;
+        }
+        /* Estilos para modal de fletes - más compacto */
+        #tabla-fletes {
+            font-size: 0.85rem;
+        }
+        #tabla-fletes thead th {
+            font-size: 0.8rem;
+            padding: 8px 6px;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        #tabla-fletes tbody td {
+            padding: 8px 6px;
+            vertical-align: middle;
+        }
+        #tabla-fletes .form-control-sm {
+            font-size: 0.8rem;
+            padding: 4px 6px;
+            height: 28px;
+        }
+        #tabla-fletes small {
+            font-size: 0.7rem;
+        }
+        #tabla-fletes tbody td strong {
+            font-size: 0.85rem;
         }
     </style>
 @stop
@@ -948,10 +1124,10 @@
             }
 
             e.preventDefault();
-            
+
             // Llenar el modal de fletes con los productos
             llenarModalFletes();
-            
+
             // Abrir el modal
             $('#modalCalculoFletes').modal('show');
         });
@@ -978,7 +1154,7 @@
                 // Obtener valores guardados si existen (de localStorage o de productos existentes)
                 const datosGuardados = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
                 let productoGuardado = datosGuardados.productos?.find(p => p.producto_id == productoId);
-                
+
                 // Si no hay en localStorage, buscar en productos existentes
                 if (!productoGuardado && productosExistentes) {
                     const productoExistente = productosExistentes.find(p => p.producto_id == productoId);
@@ -1260,6 +1436,119 @@
         $('#modalNuevoCliente').on('hidden.bs.modal', function () {
             document.getElementById('formNuevoCliente').reset();
             document.getElementById('alertNuevoCliente').innerHTML = '';
+        });
+        // Función para abrir modal de nuevo producto
+        function abrirModalNuevoProducto() {
+            $('#formNuevoProducto')[0].reset();
+            $('#alertNuevoProducto').html('');
+            $('#modalNuevoProducto').modal('show');
+        }
+
+        // Guardar nuevo producto vía AJAX
+        document.getElementById('formNuevoProducto').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const alertDiv = document.getElementById('alertNuevoProducto');
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            // Deshabilitar botón
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+            fetch('{{ route("admin.productos.store-ajax") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alertDiv.innerHTML = '<div class="alert alert-success">¡Producto creado exitosamente!</div>';
+
+                    // Agregar el producto a productosDisponibles
+                    productosDisponibles.push({
+                        id: data.producto.id,
+                        codigo_producto: data.producto.codigo_producto,
+                        descripcion: data.producto.descripcion,
+                        precio_base: parseFloat(data.producto.precio_base),
+                        precio_venta: parseFloat(data.producto.precio_venta),
+                        impuesto: parseFloat(data.producto.impuesto),
+                        stock: parseInt(data.producto.stock),
+                        unidad_medida: data.producto.unidad_medida
+                    });
+
+                    // Agregar fila al modal de productos
+                    const tbody = document.getElementById('tbody-modal-productos');
+                    const nuevaFila = document.createElement('tr');
+                    nuevaFila.setAttribute('data-producto-id', data.producto.id);
+                    nuevaFila.setAttribute('data-codigo', data.producto.codigo_producto);
+                    nuevaFila.setAttribute('data-descripcion', data.producto.descripcion);
+                    nuevaFila.setAttribute('data-precio', data.producto.precio_venta);
+                    nuevaFila.setAttribute('data-precio-base', data.producto.precio_base);
+                    nuevaFila.setAttribute('data-impuesto', data.producto.impuesto);
+                    nuevaFila.setAttribute('data-unidad', data.producto.unidad_medida);
+                    nuevaFila.className = 'fila-producto-modal';
+
+                    nuevaFila.innerHTML = `
+                        <td class="text-center">
+                            <button type="button"
+                                    class="btn btn-sm btn-success"
+                                    onclick="agregarProductoDesdeModal(${data.producto.id})"
+                                    title="Agregar producto">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </td>
+                        <td><strong>${data.producto.codigo_producto}</strong></td>
+                        <td>${data.producto.descripcion}</td>
+                        <td class="text-right">S/ ${parseFloat(data.producto.precio_base).toFixed(2)}</td>
+                        <td class="text-right">S/ ${parseFloat(data.producto.precio_venta).toFixed(2)}</td>
+                        <td class="text-center">
+                            <span class="badge badge-success">
+                                ${data.producto.stock} ${data.producto.unidad_medida}
+                            </span>
+                        </td>
+                        <td class="text-center">${parseFloat(data.producto.impuesto).toFixed(2)}%</td>
+                        <td class="text-center">
+                            <span class="badge badge-success">Activo</span>
+                        </td>
+                    `;
+
+                    tbody.appendChild(nuevaFila);
+
+                    // Actualizar contador
+                    const contador = parseInt(document.getElementById('contador-modal-productos').textContent);
+                    document.getElementById('contador-modal-productos').textContent = contador + 1;
+
+                    // Cerrar modal y agregar producto automáticamente
+                    setTimeout(() => {
+                        $('#modalNuevoProducto').modal('hide');
+                        agregarProductoDesdeModal(data.producto.id);
+                        $('#modalProductos').modal('show');
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: 'Producto creado y agregado a la cotización',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }, 1000);
+                } else {
+                    alertDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save"></i> Guardar y Agregar a Cotización';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alertDiv.innerHTML = '<div class="alert alert-danger">Error al crear el producto. Por favor, intente nuevamente.</div>';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save"></i> Guardar y Agregar a Cotización';
+            });
         });
     </script>
 @stop
