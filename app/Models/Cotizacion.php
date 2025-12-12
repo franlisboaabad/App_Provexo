@@ -53,6 +53,14 @@ class Cotizacion extends Model
     }
 
     /**
+     * Relación con Documentos
+     */
+    public function documentos(): HasMany
+    {
+        return $this->hasMany(DocumentoCliente::class);
+    }
+
+    /**
      * Scope para cotizaciones pendientes
      */
     public function scopePendientes($query)

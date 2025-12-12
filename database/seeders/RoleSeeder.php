@@ -82,6 +82,13 @@ class RoleSeeder extends Seeder
                 'admin.cuentas.update' => 'Actualizar cuenta bancaria',
                 'admin.cuentas.destroy' => 'Eliminar cuenta bancaria',
             ],
+            'documentos_clientes' => [
+                'admin.documentos-clientes.index' => 'Lista de documentos',
+                'admin.documentos-clientes.create' => 'Crear documento',
+                'admin.documentos-clientes.edit' => 'Editar documento',
+                'admin.documentos-clientes.show' => 'Ver documento',
+                'admin.documentos-clientes.destroy' => 'Eliminar documento',
+            ],
         ];
     }
 
@@ -105,6 +112,8 @@ class RoleSeeder extends Seeder
                 'admin.home',
                 'admin.cotizaciones.index',
                 'admin.cotizaciones.show',
+                'admin.documentos-clientes.index',
+                'admin.documentos-clientes.show',
             ],
         ];
     }

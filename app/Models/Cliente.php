@@ -35,4 +35,12 @@ class Cliente extends Model
     {
         return $this->hasMany(Cotizacion::class);
     }
+
+    /**
+     * Relación con Documentos
+     */
+    public function documentos(): HasMany
+    {
+        return $this->hasMany(DocumentoCliente::class);
+    }
 }

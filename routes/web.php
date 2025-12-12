@@ -10,6 +10,7 @@ use App\Http\Controllers\CotizacionController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\SerieCotizacionController;
 use App\Http\Controllers\CuentaBancariaController;
+use App\Http\Controllers\Admin\DocumentoClienteController;
 use App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +51,21 @@ Route::middleware('auth')->group(function () {
     // Administración de proveedores y clientes
     Route::resource('proveedores', ProveedorController::class)->names('admin.proveedores');
     Route::resource('clientes', ClienteController::class)->names('admin.clientes');
+
+    // Administración de documentos de clientes
+    Route::resource('documentos-clientes', DocumentoClienteController::class)->names('admin.documentos-clientes')->parameters([
+        'documentos-clientes' => 'id'
+    ]);
+    Route::get('documentos-clientes/{id}/download', [DocumentoClienteController::class, 'download'])->name('admin.documentos-clientes.download');
+
+    // Endpoint AJAX para cargar cotizaciones de un cliente
+    Route::get('api/cotizaciones/cliente/{cliente}', function($cliente) {
+        $cotizaciones = \App\Models\Cotizacion::where('cliente_id', $cliente)
+            ->orderBy('fecha_emision', 'desc')
+            ->get(['id', 'numero_cotizacion', 'fecha_emision']);
+
+        return response()->json($cotizaciones);
+    })->name('api.cotizaciones.cliente');
 
     // Administración de productos
     Route::resource('productos', ProductoController::class)->names('admin.productos');
