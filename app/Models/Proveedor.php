@@ -14,19 +14,13 @@ class Proveedor extends Model
     protected $table = 'proveedores';
 
     protected $fillable = [
-        'user_id',
+        'nombre',
         'celular',
         'empresa',
         'ruc',
+        'email',
+        'direccion',
     ];
-
-    /**
-     * Relación con User
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 
     /**
      * Relación con Productos

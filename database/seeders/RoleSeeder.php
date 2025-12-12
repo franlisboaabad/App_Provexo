@@ -103,10 +103,7 @@ class RoleSeeder extends Seeder
             ],
             'Cliente' => [
                 'admin.home',
-                'admin.clientes.index',
-                'admin.clientes.show',
                 'admin.cotizaciones.index',
-                'admin.cotizaciones.create',
                 'admin.cotizaciones.show',
             ],
         ];

@@ -54,8 +54,8 @@
                     @forelse ($proveedores as $proveedor)
                         <tr>
                             <td>{{ $proveedor->id }}</td>
-                            <td>{{ $proveedor->user->name }}</td>
-                            <td>{{ $proveedor->user->email }}</td>
+                            <td>{{ $proveedor->nombre }}</td>
+                            <td>{{ $proveedor->email ?? 'N/A' }}</td>
                             <td>{{ $proveedor->celular ?? 'N/A' }}</td>
                             <td>{{ $proveedor->empresa ?? 'N/A' }}</td>
                             <td>{{ $proveedor->ruc ?? 'N/A' }}</td>

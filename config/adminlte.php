@@ -314,6 +314,12 @@ return [
             'can' => 'admin.home',
         ],
 
+        [
+            'text' => 'Perfil',
+            'route' => 'profile.edit',
+            'icon' => 'fas fa-user',
+        ],
+
         ['header' => 'VENTAS'],
         [
             'text' => 'Cotizaciones',

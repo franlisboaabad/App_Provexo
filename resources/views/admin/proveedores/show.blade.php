@@ -22,50 +22,21 @@
         </div>
         <div class="card-body">
             <div class="row">
-                <div class="col-md-6">
-                    <h5>Información del Usuario</h5>
-                    <hr>
-                    <table class="table table-bordered">
-                        <tr>
-                            <th width="40%">ID:</th>
-                            <td>{{ $proveedore->user->id }}</td>
-                        </tr>
-                        <tr>
-                            <th>Nombre:</th>
-                            <td>{{ $proveedore->user->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Email:</th>
-                            <td>{{ $proveedore->user->email }}</td>
-                        </tr>
-                        <tr>
-                            <th>Estado:</th>
-                            <td>
-                                @if($proveedore->user->activo)
-                                    <span class="badge badge-success">Activo</span>
-                                @else
-                                    <span class="badge badge-danger">Inactivo</span>
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Registrado:</th>
-                            <td>{{ $proveedore->user->created_at->format('d/m/Y H:i') }}</td>
-                        </tr>
-                        <tr>
-                            <th>Última actualización:</th>
-                            <td>{{ $proveedore->user->updated_at->format('d/m/Y H:i') }}</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <h5>Información del Proveedor</h5>
                     <hr>
                     <table class="table table-bordered">
                         <tr>
-                            <th width="40%">ID Proveedor:</th>
+                            <th width="30%">ID:</th>
                             <td>{{ $proveedore->id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Nombre:</th>
+                            <td>{{ $proveedore->nombre }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ $proveedore->email ?? 'N/A' }}</td>
                         </tr>
                         <tr>
                             <th>Celular:</th>
@@ -80,16 +51,16 @@
                             <td>{{ $proveedore->ruc ?? 'N/A' }}</td>
                         </tr>
                         <tr>
-                            <th>Roles:</th>
-                            <td>
-                                @foreach($proveedore->user->roles as $role)
-                                    <span class="badge badge-primary">{{ $role->name }}</span>
-                                @endforeach
-                            </td>
+                            <th>Dirección:</th>
+                            <td>{{ $proveedore->direccion ?? 'N/A' }}</td>
                         </tr>
                         <tr>
                             <th>Creado:</th>
                             <td>{{ $proveedore->created_at->format('d/m/Y H:i') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Última actualización:</th>
+                            <td>{{ $proveedore->updated_at->format('d/m/Y H:i') }}</td>
                         </tr>
                     </table>
                 </div>

@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('proveedores', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
+            $table->string('nombre', 255);
             $table->string('celular', 20)->nullable();
             $table->string('empresa', 255)->nullable();
             $table->string('ruc', 100)->nullable();
-
+            $table->string('email', 255)->nullable();
+            $table->text('direccion')->nullable();
             $table->timestamps();
         });
     }

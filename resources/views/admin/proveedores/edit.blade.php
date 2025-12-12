@@ -38,15 +38,15 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="name">Nombre Completo <span class="text-danger">*</span></label>
+                            <label for="nombre">Nombre Completo <span class="text-danger">*</span></label>
                             <input type="text"
-                                   class="form-control @error('name') is-invalid @enderror"
-                                   id="name"
-                                   name="name"
-                                   value="{{ old('name', $proveedore->user->name) }}"
+                                   class="form-control @error('nombre') is-invalid @enderror"
+                                   id="nombre"
+                                   name="nombre"
+                                   value="{{ old('nombre', $proveedore->nombre) }}"
                                    required
                                    autofocus>
-                            @error('name')
+                            @error('nombre')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
                                 </span>
@@ -56,13 +56,12 @@
 
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="email">Email <span class="text-danger">*</span></label>
+                            <label for="email">Email</label>
                             <input type="email"
                                    class="form-control @error('email') is-invalid @enderror"
                                    id="email"
                                    name="email"
-                                   value="{{ old('email', $proveedore->user->email) }}"
-                                   required>
+                                   value="{{ old('email', $proveedore->email) }}">
                             @error('email')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
@@ -116,6 +115,23 @@
                                    value="{{ old('ruc', $proveedore->ruc) }}"
                                    maxlength="100">
                             @error('ruc')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="direccion">Dirección</label>
+                            <textarea class="form-control @error('direccion') is-invalid @enderror"
+                                      id="direccion"
+                                      name="direccion"
+                                      rows="3">{{ old('direccion', $proveedore->direccion) }}</textarea>
+                            @error('direccion')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
                                 </span>

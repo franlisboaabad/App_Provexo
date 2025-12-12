@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Proveedor;
 use App\Models\Cliente;
 use App\Providers\RouteServiceProvider;
+use App\Mail\ClienteRegistradoMail;
+use App\Mail\NuevoClienteAdminMail;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -38,7 +40,6 @@ class RegisteredUserController extends Controller
     {
         // Validar datos
         $validated = $request->validate([
-            'rol' => ['required', 'string', 'in:Proveedor,Cliente'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
@@ -55,7 +56,7 @@ class RegisteredUserController extends Controller
 
         try {
             // Usar transacción para asegurar consistencia
-            $user = DB::transaction(function () use ($validated, $request) {
+            $result = DB::transaction(function () use ($validated, $request) {
                 // Crear usuario
                 $user = User::create([
                     'name' => $validated['name'],
@@ -69,41 +70,32 @@ class RegisteredUserController extends Controller
                     'email' => $user->email,
                 ]);
 
-                // Asignar rol
-                $user->assignRole($validated['rol']);
+                // Asignar rol Cliente automáticamente
+                $user->assignRole('Cliente');
 
                 Log::info('Rol asignado al usuario', [
                     'user_id' => $user->id,
-                    'rol' => $validated['rol'],
+                    'rol' => 'Cliente',
                 ]);
 
-                // Crear perfil según el rol
-                if ($validated['rol'] === 'Proveedor') {
-                    Proveedor::create([
-                        'user_id' => $user->id,
-                        'celular' => $validated['celular'] ?? null,
-                        'empresa' => $validated['empresa'] ?? null,
-                        'ruc' => $validated['ruc'] ?? null,
-                    ]);
+                // Crear perfil de Cliente
+                $cliente = Cliente::create([
+                    'user_id' => $user->id,
+                    'celular' => $validated['celular'] ?? null,
+                    'empresa' => $validated['empresa'] ?? null,
+                    'ruc' => $validated['ruc'] ?? null,
+                ]);
 
-                    Log::info('Perfil de proveedor creado', [
-                        'user_id' => $user->id,
-                    ]);
-                } elseif ($validated['rol'] === 'Cliente') {
-                    Cliente::create([
-                        'user_id' => $user->id,
-                        'celular' => $validated['celular'] ?? null,
-                        'empresa' => $validated['empresa'] ?? null,
-                        'ruc' => $validated['ruc'] ?? null,
-                    ]);
+                Log::info('Perfil de cliente creado', [
+                    'user_id' => $user->id,
+                    'cliente_id' => $cliente->id,
+                ]);
 
-                    Log::info('Perfil de cliente creado', [
-                        'user_id' => $user->id,
-                    ]);
-                }
-
-                return $user;
+                return ['user' => $user, 'cliente' => $cliente];
             });
+
+            $user = $result['user'];
+            $cliente = $result['cliente'];
 
             // Disparar evento de registro
             event(new Registered($user));
@@ -112,6 +104,35 @@ class RegisteredUserController extends Controller
                 'user_id' => $user->id,
                 'email' => $user->email,
             ]);
+
+            // Enviar email de bienvenida al cliente
+            try {
+                Mail::to($user->email)->send(new ClienteRegistradoMail($user, $validated['password']));
+                Log::info('Email de bienvenida enviado al cliente', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Error al enviar email de bienvenida al cliente', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            // Enviar notificación al administrador
+            try {
+                $adminEmail = env('MAIL_FROM_ADDRESS', 'info@ideassoftperu.com');
+                Mail::to($adminEmail)->send(new NuevoClienteAdminMail($user, $cliente));
+                Log::info('Email de notificación enviado al administrador', [
+                    'user_id' => $user->id,
+                    'admin_email' => $adminEmail,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Error al enviar email de notificación al administrador', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             // Iniciar sesión automáticamente
             Auth::login($user);
