@@ -59,6 +59,7 @@ Route::middleware('auth')->group(function () {
     Route::get('cotizaciones/{cotizacione}/pdf', [CotizacionController::class, 'pdf'])->name('admin.cotizaciones.pdf');
     Route::get('cotizaciones/{cotizacione}/publica', [CotizacionController::class, 'publica'])->name('admin.cotizaciones.publica');
     Route::post('cotizaciones/{cotizacione}/enviar-email', [CotizacionController::class, 'enviarEmail'])->name('admin.cotizaciones.enviar-email');
+    Route::post('cotizaciones/{cotizacione}/cambiar-estado', [CotizacionController::class, 'cambiarEstado'])->name('admin.cotizaciones.cambiar-estado');
 
     // Administración de empresas
     Route::resource('empresas', EmpresaController::class)->names('admin.empresas');

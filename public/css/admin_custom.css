@@ -1,0 +1,97 @@
+/* Colores personalizados de Provexo+ */
+:root {
+    --provexo-azul-oscuro: #1e3a5f;
+    --provexo-azul-claro: #2c5282;
+    --provexo-naranja: #ff9202;
+    --provexo-naranja-hover: #ff8559;
+}
+
+/* Sidebar personalizado con colores de Provexo - Azul oscuro como fondo */
+.sidebar-dark-primary {
+    background-color: var(--provexo-azul-oscuro) !important;
+}
+
+/* Enlaces del menú */
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover {
+    background-color: var(--provexo-naranja);
+    color: #fff;
+}
+
+/* Enlace activo - naranja */
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
+    background-color: var(--provexo-naranja) !important;
+    color: #fff !important;
+}
+
+/* Headers del menú (ADMINISTRACIÓN, GESTIÓN, etc.) */
+.sidebar-dark-primary .nav-sidebar .nav-header {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+}
+
+/* Brand logo area */
+.sidebar-dark-primary .brand-link {
+    background-color: var(--provexo-azul-oscuro) !important;
+    border-bottom: 1px solid var(--provexo-azul-claro);
+}
+
+.sidebar-dark-primary .brand-link:hover {
+    background-color: var(--provexo-azul-claro) !important;
+}
+
+/* Texto del brand */
+.sidebar-dark-primary .brand-text {
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Menú desplegable */
+.sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link {
+    background-color: rgba(255, 107, 53, 0.2);
+    color: #fff;
+}
+
+.sidebar-dark-primary .nav-sidebar .nav-treeview {
+    background-color: rgba(30, 58, 95, 0.3);
+}
+
+.sidebar-dark-primary .nav-sidebar .nav-treeview > .nav-item > .nav-link {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.sidebar-dark-primary .nav-sidebar .nav-treeview > .nav-item > .nav-link:hover,
+.sidebar-dark-primary .nav-sidebar .nav-treeview > .nav-item > .nav-link.active {
+    background-color: var(--provexo-naranja);
+    color: #fff;
+}
+
+/* Scrollbar personalizado */
+.sidebar-dark-primary .os-scrollbar-handle {
+    background-color: rgba(255, 107, 53, 0.3);
+}
+
+.sidebar-dark-primary .os-scrollbar-handle:hover {
+    background-color: var(--provexo-naranja);
+}
+
+/* Búsqueda del sidebar */
+.sidebar-dark-primary .form-control-sidebar {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.sidebar-dark-primary .form-control-sidebar:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--provexo-naranja);
+    color: #fff;
+}
+
+.sidebar-dark-primary .form-control-sidebar::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+

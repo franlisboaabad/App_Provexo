@@ -55,7 +55,7 @@
             @endcan
         </div>
         <div class="card-body">
-            <table class="table table-bordered table-striped table-hover">
+            <table id="productosTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -230,6 +230,17 @@ PROD003,Producto Ejemplo 3,5.00,8.50,0,litro</pre>
         $('#modalImportar').on('hidden.bs.modal', function() {
             $('#formImportar')[0].reset();
             $('#archivo_csv').next('.custom-file-label').html('Elegir archivo...');
+        });
+
+        // Inicializar DataTable
+        $(document).ready(function() {
+            $('#productosTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+                },
+                "pageLength": 25,
+                "order": [[0, "desc"]]
+            });
         });
     </script>
 @stop

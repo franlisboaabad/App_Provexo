@@ -22,7 +22,7 @@ class CotizacionController extends Controller
         $this->middleware('auth');
         $this->middleware('can:admin.cotizaciones.index')->only('index');
         $this->middleware('can:admin.cotizaciones.create')->only('create', 'store');
-        $this->middleware('can:admin.cotizaciones.edit')->only('edit', 'update');
+        $this->middleware('can:admin.cotizaciones.edit')->only('edit', 'update', 'cambiarEstado');
         $this->middleware('can:admin.cotizaciones.show')->only('show', 'pdf');
         $this->middleware('can:admin.cotizaciones.publica')->only('publica');
         $this->middleware('can:admin.cotizaciones.enviar-email')->only('enviarEmail');
@@ -288,6 +288,44 @@ class CotizacionController extends Controller
             return back()
                 ->withInput()
                 ->withErrors(['error' => 'Error al actualizar cotización. Intente nuevamente.']);
+        }
+    }
+
+    /**
+     * Cambiar el estado de una cotización
+     */
+    public function cambiarEstado(Request $request, Cotizacion $cotizacione)
+    {
+        $validated = $request->validate([
+            'estado' => ['required', 'in:pendiente,aprobada,rechazada,vencida'],
+        ]);
+
+        try {
+            $cotizacione->update([
+                'estado' => $validated['estado']
+            ]);
+
+            Log::info('Estado de cotización actualizado', [
+                'cotizacion_id' => $cotizacione->id,
+                'nuevo_estado' => $validated['estado']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Estado actualizado correctamente',
+                'estado' => $validated['estado'],
+                'estado_texto' => ucfirst($validated['estado'])
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al cambiar estado de cotización', [
+                'cotizacion_id' => $cotizacione->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar el estado'
+            ], 500);
         }
     }
 

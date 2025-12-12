@@ -159,6 +159,7 @@
 @stop
 
 @section('css')
+    <link rel="stylesheet" href="/css/admin_custom.css">
     <style>
         .bg-purple {
             background-color: #6f42c1 !important;

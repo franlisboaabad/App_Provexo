@@ -38,7 +38,7 @@
             @endcan
         </div>
         <div class="card-body">
-            <table class="table table-bordered table-striped table-hover">
+            <table id="proveedoresTable" class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -111,6 +111,17 @@
         setTimeout(function() {
             $('.alert').fadeOut('slow');
         }, 5000);
+
+        // Inicializar DataTable
+        $(document).ready(function() {
+            $('#proveedoresTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+                },
+                "pageLength": 25,
+                "order": [[0, "desc"]]
+            });
+        });
     </script>
 @stop
 
