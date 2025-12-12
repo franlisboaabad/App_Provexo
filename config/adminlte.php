@@ -346,6 +346,14 @@ return [
             'icon' => 'fas fa-box',
             'can' => 'admin.productos.index',
         ],
+
+        ['header' => 'VENTAS'],
+        [
+            'text' => 'Cotizaciones',
+            'route' => 'admin.cotizaciones.index',
+            'icon' => 'fas fa-file-invoice-dollar',
+            'can' => 'admin.cotizaciones.index',
+        ],
         // [
         //     'text' => 'profile',
         //     'url'  => 'admin/settings',

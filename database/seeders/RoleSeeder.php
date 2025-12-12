@@ -50,6 +50,13 @@ class RoleSeeder extends Seeder
                 'admin.productos.show' => 'Ver producto',
                 'admin.productos.destroy' => 'Eliminar producto',
             ],
+            'cotizaciones' => [
+                'admin.cotizaciones.index' => 'Lista de cotizaciones',
+                'admin.cotizaciones.create' => 'Crear cotización',
+                'admin.cotizaciones.edit' => 'Editar cotización',
+                'admin.cotizaciones.show' => 'Ver cotización',
+                'admin.cotizaciones.destroy' => 'Eliminar cotización',
+            ],
         ];
     }
 
@@ -73,6 +80,9 @@ class RoleSeeder extends Seeder
                 'admin.home',
                 'admin.clientes.index',
                 'admin.clientes.show',
+                'admin.cotizaciones.index',
+                'admin.cotizaciones.create',
+                'admin.cotizaciones.show',
             ],
         ];
     }
