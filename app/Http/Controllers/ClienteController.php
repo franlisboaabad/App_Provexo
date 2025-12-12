@@ -56,7 +56,10 @@ class ClienteController extends Controller
         Log::info('Creando nuevo cliente', ['email' => $request->email]);
 
         try {
-            DB::transaction(function () use ($validated) {
+            $user = null;
+            $cliente = null;
+
+            DB::transaction(function () use ($validated, &$user, &$cliente) {
                 $user = \App\Models\User::create([
                     'name' => $validated['name'],
                     'email' => $validated['email'],
@@ -66,7 +69,7 @@ class ClienteController extends Controller
 
                 $user->assignRole('Cliente');
 
-                Cliente::create([
+                $cliente = Cliente::create([
                     'user_id' => $user->id,
                     'celular' => $validated['celular'] ?? null,
                     'empresa' => $validated['empresa'] ?? null,
@@ -76,14 +79,49 @@ class ClienteController extends Controller
                 Log::info('Cliente creado exitosamente', ['user_id' => $user->id]);
             });
 
+            // Si es una petición AJAX, responder con JSON
+            if (($request->expectsJson() || $request->ajax()) && $user && $cliente) {
+                // Recargar el cliente con la relación de usuario para obtener datos actualizados
+                $cliente->load('user');
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Cliente creado exitosamente',
+                    'cliente' => [
+                        'id' => $cliente->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'empresa' => $cliente->empresa ?? 'Sin empresa',
+                    ]
+                ]);
+            }
+
             return redirect()->route('admin.clientes.index')
                 ->with('success', 'Cliente creado exitosamente');
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Si es una petición AJAX, responder con JSON de error de validación
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error al crear cliente', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
+            // Si es una petición AJAX, responder con JSON de error
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al crear cliente. Intente nuevamente.'
+                ], 500);
+            }
 
             return back()
                 ->withInput()
