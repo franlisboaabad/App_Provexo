@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
+            $table->foreignId('proveedor_id')->nullable()->constrained('proveedores')->onDelete('cascade');
             $table->string('codigo_producto', 100)->unique();
             $table->string('descripcion', 255);
             $table->decimal('precio_base', 10, 2);

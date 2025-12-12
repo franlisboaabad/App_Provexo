@@ -94,9 +94,13 @@
                         <tr>
                             <th width="40%">Proveedor:</th>
                             <td>
-                                <strong>{{ $producto->proveedor->user->name ?? 'N/A' }}</strong>
-                                @if($producto->proveedor->empresa)
-                                    <br><small class="text-muted">{{ $producto->proveedor->empresa }}</small>
+                                @if($producto->proveedor && $producto->proveedor->user)
+                                    <strong>{{ $producto->proveedor->user->name }}</strong>
+                                    @if($producto->proveedor->empresa)
+                                        <br><small class="text-muted">{{ $producto->proveedor->empresa }}</small>
+                                    @endif
+                                @else
+                                    <span class="text-muted">Sin proveedor asignado</span>
                                 @endif
                             </td>
                         </tr>

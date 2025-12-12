@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
 
     // Administración de productos
     Route::resource('productos', ProductoController::class)->names('admin.productos');
+    Route::post('productos/import', [ProductoController::class, 'import'])->name('admin.productos.import');
 });
 
 
