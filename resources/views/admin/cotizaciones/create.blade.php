@@ -4,6 +4,10 @@
 
 @section('plugins.Select2', true)
 
+@push('css')
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+@endpush
+
 @section('content_header')
     <h1>Crear Nueva Cotización</h1>
 @stop
@@ -229,6 +233,16 @@
                                     <tr>
                                         <th>Impuesto:</th>
                                         <td class="text-right"><span id="impuesto-total">S/ 0.00</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="impuesto-cero" onchange="toggleImpuestoCero()">
+                                                <label class="form-check-label" for="impuesto-cero">
+                                                    <small>Impuesto 0% para todos los productos</small>
+                                                </label>
+                                            </div>
+                                        </td>
                                     </tr>
                                     <tr class="table-primary">
                                         <th><strong>TOTAL:</strong></th>
@@ -479,10 +493,44 @@
 @stop
 
 @section('js')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         let productosAgregados = new Map();
         let contadorProductos = 0;
         const productosDisponibles = @json($productos);
+
+        // Función para alternar impuesto a 0%
+        function toggleImpuestoCero() {
+            const checkbox = document.getElementById('impuesto-cero');
+            const aplicarImpuestoCero = checkbox.checked;
+
+            document.querySelectorAll('#tbody-productos tr[data-producto-id]').forEach(fila => {
+                const impuestoInput = fila.querySelector('.impuesto-valor');
+                const impuestoDisplay = fila.querySelector('.impuesto-display');
+
+                if (aplicarImpuestoCero) {
+                    // Guardar el impuesto original si no está guardado
+                    if (!impuestoInput.hasAttribute('data-impuesto-original-guardado')) {
+                        const impuestoOriginal = parseFloat(impuestoInput.value) || 0;
+                        impuestoInput.setAttribute('data-impuesto-original-guardado', impuestoOriginal);
+                    }
+                    // Establecer impuesto a 0
+                    impuestoInput.value = 0;
+                    impuestoDisplay.textContent = '0.00%';
+                } else {
+                    // Restaurar el impuesto original
+                    const impuestoOriginal = parseFloat(impuestoInput.getAttribute('data-impuesto-original-guardado') || impuestoInput.getAttribute('data-impuesto-original') || 0);
+                    impuestoInput.value = impuestoOriginal;
+                    impuestoDisplay.textContent = impuestoOriginal.toFixed(2) + '%';
+                    impuestoInput.removeAttribute('data-impuesto-original-guardado');
+                }
+
+                // Recalcular la fila
+                calcularFila(fila);
+            });
+
+            guardarEnLocalStorage();
+        }
         const STORAGE_KEY = 'cotizacion_temporal_' + window.location.pathname;
 
         // Cargar datos guardados al iniciar
@@ -749,7 +797,7 @@
                         <i class="fas fa-trash"></i>
                     </button>
                     <input type="hidden" name="productos[${producto.id}][producto_id]" value="${producto.id}">
-                    <input type="hidden" class="impuesto-valor" value="${producto.impuesto || 0}">
+                    <input type="hidden" class="impuesto-valor" value="${producto.impuesto || 0}" data-impuesto-original="${producto.impuesto || 0}">
                 </td>
             `;
 
@@ -872,17 +920,37 @@
             });
         });
 
-        // Validar formulario y limpiar localStorage al enviar
+        // Interceptar submit del formulario con SweetAlert
         document.getElementById('formCotizacion').addEventListener('submit', function(e) {
             if (productosAgregados.size === 0) {
                 e.preventDefault();
-                alert('Debe agregar al menos un producto a la cotización');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Debe agregar al menos un producto a la cotización'
+                });
                 return false;
             }
 
-            // Limpiar localStorage solo si el formulario se va a enviar correctamente
-            // Se limpia después de validar que todo está bien
-            limpiarLocalStorage();
+            e.preventDefault();
+
+            Swal.fire({
+                title: '¿Generar Cotización?',
+                text: '¿Está seguro que desea generar la cotización?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, generar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Limpiar localStorage antes de enviar
+                    limpiarLocalStorage();
+                    // Si confirma, enviar el formulario
+                    this.submit();
+                }
+            });
         });
 
         // Calcular total al cargar
@@ -1006,4 +1074,205 @@
             document.getElementById('alertNuevoCliente').innerHTML = '';
         });
     </script>
+
+    <!-- Modal de Cotización Creada -->
+    @if(session('cotizacion_creada') && isset($cotizacion))
+    <div class="modal fade" id="modalCotizacionCreada" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white">
+                        <i class="fas fa-check-circle"></i> Cotización Generada Exitosamente
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Columna Izquierda: Preview -->
+                        <div class="col-md-7">
+                            <h6 class="font-weight-bold mb-3">
+                                <i class="fas fa-file-pdf text-danger"></i> Vista Previa
+                            </h6>
+                            <div class="border p-3" style="background-color: #f8f9fa; min-height: 500px;">
+                                <iframe id="previewPdf" src="{{ route('admin.cotizaciones.pdf', $cotizacion) }}"
+                                        style="width: 100%; height: 500px; border: none;"></iframe>
+                            </div>
+                        </div>
+
+                        <!-- Columna Derecha: Acciones Rápidas -->
+                        <div class="col-md-5">
+                            <h6 class="font-weight-bold mb-3">
+                                <i class="fas fa-bolt"></i> Acciones Rápidas
+                            </h6>
+
+                            <!-- Descargar PDF -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-download text-primary"></i> Descargar PDF
+                                    </h6>
+                                    <p class="card-text text-muted small">Descarga la cotización en formato PDF</p>
+                                    <a href="{{ route('admin.cotizaciones.pdf', $cotizacion) }}"
+                                       class="btn btn-primary btn-block"
+                                       target="_blank"
+                                       download>
+                                        <i class="fas fa-file-pdf"></i> Descargar Cotización
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Enviar por Email -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-envelope text-success"></i> Enviar por Email
+                                    </h6>
+                                    <p class="card-text text-muted small">Envía la cotización por correo electrónico</p>
+                                    <form id="formEnviarEmail" onsubmit="enviarEmail(event)">
+                                        @csrf
+                                        <div class="form-group">
+                                            <input type="email"
+                                                   class="form-control"
+                                                   id="emailCliente"
+                                                   placeholder="correo@ejemplo.com"
+                                                   required>
+                                        </div>
+                                        <button type="submit" class="btn btn-success btn-block">
+                                            <i class="fas fa-paper-plane"></i> Enviar Email
+                                        </button>
+                                    </form>
+                                    <div id="alertEmail" class="mt-2"></div>
+                                </div>
+                            </div>
+
+                            <!-- Enviar por WhatsApp -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fab fa-whatsapp text-success"></i> Enviar por WhatsApp
+                                    </h6>
+                                    <p class="card-text text-muted small">Envía la cotización directamente por WhatsApp</p>
+
+                                    <!-- Radio buttons para seleccionar tipo de WhatsApp -->
+                                    <div class="form-group mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="whatsappTipo" id="whatsappWeb" value="web" checked>
+                                            <label class="form-check-label" for="whatsappWeb">
+                                                WhatsApp Web
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="whatsappTipo" id="whatsappDesktop" value="desktop">
+                                            <label class="form-check-label" for="whatsappDesktop">
+                                                WhatsApp Desktop (Windows)
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <form id="formEnviarWhatsApp" onsubmit="enviarWhatsApp(event)">
+                                        @csrf
+                                        <div class="form-group">
+                                            <input type="tel"
+                                                   class="form-control"
+                                                   id="telefonoWhatsApp"
+                                                   placeholder="+51 987 654 321"
+                                                   required>
+                                            <small class="form-text text-muted">Incluye código de país (ej: +51)</small>
+                                        </div>
+                                        <button type="submit" class="btn btn-success btn-block">
+                                            <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+                                        </button>
+                                    </form>
+                                    <div id="alertWhatsApp" class="mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="{{ route('admin.cotizaciones.index') }}" class="btn btn-secondary">
+                        <i class="fas fa-list"></i> Ver Todas las Cotizaciones
+                    </a>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cotizacionId = {{ $cotizacion->id }};
+        const csrfToken = '{{ csrf_token() }}';
+
+        // Abrir modal automáticamente
+        $(document).ready(function() {
+            $('#modalCotizacionCreada').modal('show');
+        });
+
+        function enviarEmail(event) {
+            event.preventDefault();
+            const email = document.getElementById('emailCliente').value;
+            const alertDiv = document.getElementById('alertEmail');
+
+            fetch(`/cotizaciones/${cotizacionId}/enviar-email`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alertDiv.innerHTML = '<div class="alert alert-success">¡Email enviado exitosamente!</div>';
+                    document.getElementById('formEnviarEmail').reset();
+                } else {
+                    alertDiv.innerHTML = '<div class="alert alert-danger">' + (data.message || 'Error al enviar el email') + '</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alertDiv.innerHTML = '<div class="alert alert-danger">Error al enviar el email. Por favor, intente nuevamente.</div>';
+            });
+        }
+
+        function enviarWhatsApp(event) {
+            event.preventDefault();
+            const telefono = document.getElementById('telefonoWhatsApp').value.replace(/\s+/g, '');
+            const tipo = document.querySelector('input[name="whatsappTipo"]:checked').value;
+            const alertDiv = document.getElementById('alertWhatsApp');
+
+            // Obtener URL pública
+            fetch(`/cotizaciones/${cotizacionId}/publica`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const mensaje = encodeURIComponent('Hola, te comparto la cotización: ' + data.url);
+                    let urlWhatsApp = '';
+
+                    if (tipo === 'web') {
+                        // WhatsApp Web
+                        urlWhatsApp = `https://web.whatsapp.com/send?phone=${telefono}&text=${mensaje}`;
+                    } else {
+                        // WhatsApp Desktop (Windows) - usa wa.me que abre la app si está instalada
+                        urlWhatsApp = `https://wa.me/${telefono}?text=${mensaje}`;
+                    }
+
+                    window.open(urlWhatsApp, '_blank');
+                    alertDiv.innerHTML = '<div class="alert alert-success">Redirigiendo a WhatsApp...</div>';
+                } else {
+                    alertDiv.innerHTML = '<div class="alert alert-danger">Error al generar el enlace. Intente nuevamente.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alertDiv.innerHTML = '<div class="alert alert-danger">Error al generar el enlace. Por favor, intente nuevamente.</div>';
+            });
+        }
+    </script>
+    @endif
 @stop

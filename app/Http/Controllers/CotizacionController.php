@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail as MailFacade;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -46,7 +47,13 @@ class CotizacionController extends Controller
         $clientes = Cliente::with('user')->get();
         $productos = Producto::activos()->with('proveedor')->get();
 
-        return view('admin.cotizaciones.create', compact('clientes', 'productos'));
+        // Si hay una cotización creada, cargarla para el modal
+        $cotizacion = null;
+        if (session('cotizacion_creada')) {
+            $cotizacion = Cotizacion::with('cliente.user', 'productos.producto')->find(session('cotizacion_creada'));
+        }
+
+        return view('admin.cotizaciones.create', compact('clientes', 'productos', 'cotizacion'));
     }
 
     /**
@@ -71,9 +78,17 @@ class CotizacionController extends Controller
         Log::info('Creando nueva cotización', ['cliente_id' => $validated['cliente_id']]);
 
         try {
-            DB::transaction(function () use ($validated) {
+            $cotizacionCreada = null;
+            $numeroCotizacion = null;
+
+            DB::transaction(function () use ($validated, &$cotizacionCreada, &$numeroCotizacion) {
                 // Generar número de cotización
                 $numeroCotizacion = Cotizacion::generarNumeroCotizacion();
+
+                // Generar token público único
+                do {
+                    $tokenPublico = \Illuminate\Support\Str::random(64);
+                } while (Cotizacion::where('token_publico', $tokenPublico)->exists());
 
                 // Calcular totales
                 $subtotal = 0;
@@ -97,6 +112,7 @@ class CotizacionController extends Controller
                 $cotizacion = Cotizacion::create([
                     'cliente_id' => $validated['cliente_id'],
                     'numero_cotizacion' => $numeroCotizacion,
+                    'token_publico' => $tokenPublico,
                     'fecha_emision' => $validated['fecha_emision'],
                     'fecha_vencimiento' => $validated['fecha_vencimiento'] ?? null,
                     'estado' => $validated['estado'],
@@ -127,13 +143,21 @@ class CotizacionController extends Controller
                     ]);
                 }
 
+                $cotizacionCreada = $cotizacion;
+
                 Log::info('Cotización creada exitosamente', [
                     'cotizacion_id' => $cotizacion->id,
                     'numero_cotizacion' => $numeroCotizacion
                 ]);
             });
 
-            return redirect()->route('admin.cotizaciones.index')
+            // Validar que se creó la cotización
+            if (!$cotizacionCreada) {
+                throw new \Exception('No se pudo crear la cotización');
+            }
+
+            return redirect()->route('admin.cotizaciones.create')
+                ->with('cotizacion_creada', $cotizacionCreada->id)
                 ->with('success', 'Cotización creada exitosamente');
 
         } catch (\Exception $e) {
@@ -351,6 +375,117 @@ class CotizacionController extends Controller
 
             return back()
                 ->withErrors(['error' => 'Error al generar el PDF. Intente nuevamente.']);
+        }
+    }
+
+    /**
+     * Obtener URL pública de la cotización
+     */
+    public function publica(Cotizacion $cotizacione)
+    {
+        if (!$cotizacione->token_publico) {
+            // Generar token si no existe
+            do {
+                $tokenPublico = \Illuminate\Support\Str::random(64);
+            } while (Cotizacion::where('token_publico', $tokenPublico)->exists());
+
+            $cotizacione->update(['token_publico' => $tokenPublico]);
+        }
+
+        $urlPublica = route('cotizacion.publica', $cotizacione->token_publico);
+
+        return response()->json([
+            'success' => true,
+            'url' => $urlPublica
+        ]);
+    }
+
+    /**
+     * Ver cotización pública (sin autenticación)
+     */
+    public function verPublica($token)
+    {
+        $cotizacione = Cotizacion::where('token_publico', $token)
+            ->with('cliente.user', 'productos.producto')
+            ->firstOrFail();
+
+        // Obtener empresa principal
+        $empresa = Empresa::where('es_principal', true)->first();
+        if (!$empresa) {
+            $empresa = Empresa::activas()->first();
+        }
+        if (!$empresa) {
+            $empresa = new Empresa();
+        }
+
+        $cuentasBancarias = $empresa->id ? $empresa->cuentasBancarias()->where('activa', true)->get() : collect([]);
+
+        // Renderizar vista pública del PDF
+        $html = view('admin.cotizaciones.pdf', compact('cotizacione', 'empresa', 'cuentasBancarias'))->render();
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('defaultFont', 'Arial');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = 'cotizacion-' . $cotizacione->numero_cotizacion . '.pdf';
+        return $dompdf->stream($filename, ['Attachment' => false]);
+    }
+
+    /**
+     * Enviar cotización por email
+     */
+    public function enviarEmail(Request $request, Cotizacion $cotizacione)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        try {
+            // Obtener URL pública
+            if (!$cotizacione->token_publico) {
+                do {
+                    $tokenPublico = \Illuminate\Support\Str::random(64);
+                } while (Cotizacion::where('token_publico', $tokenPublico)->exists());
+                $cotizacione->update(['token_publico' => $tokenPublico]);
+            }
+
+            $urlPublica = route('cotizacion.publica', $cotizacione->token_publico);
+
+            // Enviar email (implementación básica - puedes mejorarla con una clase Mailable)
+            $mensaje = "Hola,\n\n";
+            $mensaje .= "Se ha generado una nueva cotización para usted.\n\n";
+            $mensaje .= "Número de Cotización: {$cotizacione->numero_cotizacion}\n";
+            $mensaje .= "Total: S/ " . number_format($cotizacione->total, 2) . "\n\n";
+            $mensaje .= "Puede ver y descargar la cotización en el siguiente enlace:\n";
+            $mensaje .= $urlPublica . "\n\n";
+            $mensaje .= "Saludos cordiales.";
+
+            MailFacade::raw($mensaje, function ($message) use ($request, $cotizacione) {
+                $message->to($request->email)
+                    ->subject('Cotización #' . $cotizacione->numero_cotizacion);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cotización enviada por email exitosamente'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al enviar email de cotización', [
+                'cotizacion_id' => $cotizacione->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al enviar el email. Intente nuevamente.'
+            ], 500);
         }
     }
 }

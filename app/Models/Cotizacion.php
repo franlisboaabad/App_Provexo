@@ -16,6 +16,7 @@ class Cotizacion extends Model
     protected $fillable = [
         'cliente_id',
         'numero_cotizacion',
+        'token_publico',
         'fecha_emision',
         'fecha_vencimiento',
         'estado',

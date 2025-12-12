@@ -28,6 +28,9 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
+// Ruta pública para ver cotización (sin autenticación)
+Route::get('cotizacion/{token}', [CotizacionController::class, 'verPublica'])->name('cotizacion.publica');
+
 
 Route::middleware('auth')->group(function () {
     // Dashboard
@@ -54,6 +57,8 @@ Route::middleware('auth')->group(function () {
     // Administración de cotizaciones
     Route::resource('cotizaciones', CotizacionController::class)->names('admin.cotizaciones');
     Route::get('cotizaciones/{cotizacione}/pdf', [CotizacionController::class, 'pdf'])->name('admin.cotizaciones.pdf');
+    Route::get('cotizaciones/{cotizacione}/publica', [CotizacionController::class, 'publica'])->name('admin.cotizaciones.publica');
+    Route::post('cotizaciones/{cotizacione}/enviar-email', [CotizacionController::class, 'enviarEmail'])->name('admin.cotizaciones.enviar-email');
 
     // Administración de empresas
     Route::resource('empresas', EmpresaController::class)->names('admin.empresas');
