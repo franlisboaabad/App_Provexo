@@ -7,11 +7,13 @@ use App\Models\CotizacionProducto;
 use App\Models\Cliente;
 use App\Models\Producto;
 use App\Models\Empresa;
+use App\Models\HistorialPrecioProducto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail as MailFacade;
+use Illuminate\Support\Facades\Auth;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -75,6 +77,17 @@ class CotizacionController extends Controller
             'productos.*.cantidad' => ['required', 'integer', 'min:1'],
             'productos.*.precio_unitario' => ['required', 'numeric', 'min:0'],
             'productos.*.descuento' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'productos.*.peso_unidad' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.flete_tonelada' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.margen_porcentaje' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.flete_unitario' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.costo_mas_flete' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.total_kg' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.margen_total' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.flete_total' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.precio_base_original' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.precio_base_cotizacion' => ['nullable', 'numeric', 'min:0'],
+            'actualizar_precio_base' => ['nullable', 'boolean'],
         ]);
 
         Log::info('Creando nueva cotización', ['cliente_id' => $validated['cliente_id']]);
@@ -134,14 +147,56 @@ class CotizacionController extends Controller
                     $impuestoMonto = $subtotalSinImpuesto * ($impuesto / 100);
                     $subtotalProducto = $subtotalSinImpuesto + $impuestoMonto;
 
+                    $precioBaseCotizacion = $productoData['precio_base_cotizacion'] ?? $producto->precio_base;
+                    $precioBaseOriginal = $productoData['precio_base_original'] ?? $producto->precio_base;
+
+                    // Verificar si el precio base cambió y registrar en historial
+                    if (isset($productoData['precio_base_cotizacion']) &&
+                        abs($precioBaseOriginal - $precioBaseCotizacion) > 0.01) {
+                        HistorialPrecioProducto::create([
+                            'producto_id' => $producto->id,
+                            'cotizacion_id' => $cotizacion->id,
+                            'usuario_id' => Auth::id(),
+                            'precio_base_anterior' => $precioBaseOriginal,
+                            'precio_base_nuevo' => $precioBaseCotizacion,
+                            'observaciones' => "Cambio de precio base en cotización {$cotizacion->numero_cotizacion}",
+                        ]);
+
+                        // Actualizar precio base del producto si está marcado
+                        if ($validated['actualizar_precio_base'] ?? false) {
+                            $producto->update(['precio_base' => $precioBaseCotizacion]);
+                            Log::info('Precio base del producto actualizado', [
+                                'producto_id' => $producto->id,
+                                'precio_anterior' => $precioBaseOriginal,
+                                'precio_nuevo' => $precioBaseCotizacion,
+                            ]);
+                        }
+
+                        Log::info('Precio base registrado en historial', [
+                            'producto_id' => $producto->id,
+                            'cotizacion_id' => $cotizacion->id,
+                            'precio_anterior' => $precioBaseOriginal,
+                            'precio_nuevo' => $precioBaseCotizacion,
+                        ]);
+                    }
+
                     CotizacionProducto::create([
                         'cotizacion_id' => $cotizacion->id,
                         'producto_id' => $productoData['producto_id'],
                         'cantidad' => $productoData['cantidad'],
                         'precio_unitario' => $productoData['precio_unitario'],
+                        'precio_base_cotizacion' => $precioBaseCotizacion,
                         'descuento' => $productoData['descuento'] ?? 0,
                         'impuesto' => $impuesto,
                         'subtotal' => $subtotalProducto,
+                        'peso_unidad' => $productoData['peso_unidad'] ?? null,
+                        'flete_tonelada' => $productoData['flete_tonelada'] ?? null,
+                        'margen_porcentaje' => $productoData['margen_porcentaje'] ?? null,
+                        'flete_unitario' => $productoData['flete_unitario'] ?? null,
+                        'costo_mas_flete' => $productoData['costo_mas_flete'] ?? null,
+                        'total_kg' => $productoData['total_kg'] ?? null,
+                        'margen_total' => $productoData['margen_total'] ?? null,
+                        'flete_total' => $productoData['flete_total'] ?? null,
                     ]);
                 }
 
@@ -213,6 +268,17 @@ class CotizacionController extends Controller
             'productos.*.cantidad' => ['required', 'integer', 'min:1'],
             'productos.*.precio_unitario' => ['required', 'numeric', 'min:0'],
             'productos.*.descuento' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'productos.*.peso_unidad' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.flete_tonelada' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.margen_porcentaje' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.flete_unitario' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.costo_mas_flete' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.total_kg' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.margen_total' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.flete_total' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.precio_base_original' => ['nullable', 'numeric', 'min:0'],
+            'productos.*.precio_base_cotizacion' => ['nullable', 'numeric', 'min:0'],
+            'actualizar_precio_base' => ['nullable', 'boolean'],
         ]);
 
         Log::info('Actualizando cotización', ['cotizacion_id' => $cotizacione->id]);
@@ -262,14 +328,56 @@ class CotizacionController extends Controller
                     $impuestoMonto = $subtotalSinImpuesto * ($impuesto / 100);
                     $subtotalProducto = $subtotalSinImpuesto + $impuestoMonto;
 
+                    $precioBaseCotizacion = $productoData['precio_base_cotizacion'] ?? $producto->precio_base;
+                    $precioBaseOriginal = $productoData['precio_base_original'] ?? $producto->precio_base;
+
+                    // Verificar si el precio base cambió y registrar en historial
+                    if (isset($productoData['precio_base_cotizacion']) &&
+                        abs($precioBaseOriginal - $precioBaseCotizacion) > 0.01) {
+                        HistorialPrecioProducto::create([
+                            'producto_id' => $producto->id,
+                            'cotizacion_id' => $cotizacione->id,
+                            'usuario_id' => Auth::id(),
+                            'precio_base_anterior' => $precioBaseOriginal,
+                            'precio_base_nuevo' => $precioBaseCotizacion,
+                            'observaciones' => "Cambio de precio base en cotización {$cotizacione->numero_cotizacion} (actualización)",
+                        ]);
+
+                        // Actualizar precio base del producto si está marcado
+                        if ($validated['actualizar_precio_base'] ?? false) {
+                            $producto->update(['precio_base' => $precioBaseCotizacion]);
+                            Log::info('Precio base del producto actualizado (actualización)', [
+                                'producto_id' => $producto->id,
+                                'precio_anterior' => $precioBaseOriginal,
+                                'precio_nuevo' => $precioBaseCotizacion,
+                            ]);
+                        }
+
+                        Log::info('Precio base registrado en historial (actualización)', [
+                            'producto_id' => $producto->id,
+                            'cotizacion_id' => $cotizacione->id,
+                            'precio_anterior' => $precioBaseOriginal,
+                            'precio_nuevo' => $precioBaseCotizacion,
+                        ]);
+                    }
+
                     CotizacionProducto::create([
                         'cotizacion_id' => $cotizacione->id,
                         'producto_id' => $productoData['producto_id'],
                         'cantidad' => $productoData['cantidad'],
                         'precio_unitario' => $productoData['precio_unitario'],
+                        'precio_base_cotizacion' => $precioBaseCotizacion,
                         'descuento' => $productoData['descuento'] ?? 0,
                         'impuesto' => $impuesto,
                         'subtotal' => $subtotalProducto,
+                        'peso_unidad' => $productoData['peso_unidad'] ?? null,
+                        'flete_tonelada' => $productoData['flete_tonelada'] ?? null,
+                        'margen_porcentaje' => $productoData['margen_porcentaje'] ?? null,
+                        'flete_unitario' => $productoData['flete_unitario'] ?? null,
+                        'costo_mas_flete' => $productoData['costo_mas_flete'] ?? null,
+                        'total_kg' => $productoData['total_kg'] ?? null,
+                        'margen_total' => $productoData['margen_total'] ?? null,
+                        'flete_total' => $productoData['flete_total'] ?? null,
                     ]);
                 }
 

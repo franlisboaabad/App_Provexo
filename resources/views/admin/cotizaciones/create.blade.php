@@ -368,6 +368,98 @@
         </div>
     </div>
 
+    <!-- Modal para cálculo de fletes -->
+    <div class="modal fade" id="modalCalculoFletes" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-calculator"></i> Cálculo de Fletes y Margen
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Instrucciones:</strong> Complete los campos de Peso x Unidad, Flete x Tonelada y % Margen para cada producto.
+                        Los cálculos se realizarán automáticamente.
+                    </div>
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-bordered table-sm" id="tabla-fletes">
+                            <thead class="thead-light sticky-top">
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="15%">Código</th>
+                                    <th width="20%">Descripción</th>
+                                    <th width="8%" class="text-center">Cantidad</th>
+                                    <th width="10%" class="text-right">Precio Unit.</th>
+                                    <th width="10%" class="text-center">Peso x Unidad (kg)</th>
+                                    <th width="10%" class="text-center">Flete x Tonelada (S/)</th>
+                                    <th width="10%" class="text-center">% Margen</th>
+                                    <th width="12%" class="text-right">Flete Unit.</th>
+                                    <th width="12%" class="text-right">Costo + Flete</th>
+                                    <th width="12%" class="text-right">Total KG</th>
+                                    <th width="12%" class="text-right">Margen Total</th>
+                                    <th width="12%" class="text-right">Flete Total (S/)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-fletes">
+                                <!-- Se llenará dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Resumen de Fletes</h6>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <strong>Total KG:</strong> <span id="resumen-total-kg">0.00</span> kg
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Total Flete:</strong> S/ <span id="resumen-total-flete">0.00</span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Total Margen:</strong> S/ <span id="resumen-total-margen">0.00</span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Total Costo + Flete:</strong> S/ <span id="resumen-total-costo-flete">0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="actualizar-precio-base" checked>
+                                    <label class="form-check-label" for="actualizar-precio-base">
+                                        <strong>Actualizar precio base del producto automáticamente</strong>
+                                        <br>
+                                        <small>Si está marcado, el precio base del producto se actualizará con el nuevo valor ingresado en esta cotización.</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" id="btn-confirmar-fletes">
+                        <i class="fas fa-check"></i> Confirmar y Guardar Cotización
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal para seleccionar productos -->
     <div class="modal fade" id="modalProductos" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
@@ -920,7 +1012,7 @@
             });
         });
 
-        // Interceptar submit del formulario con SweetAlert
+        // Interceptar submit del formulario - abrir modal de fletes
         document.getElementById('formCotizacion').addEventListener('submit', function(e) {
             if (productosAgregados.size === 0) {
                 e.preventDefault();
@@ -934,23 +1026,218 @@
 
             e.preventDefault();
 
-            Swal.fire({
-                title: '¿Generar Cotización?',
-                text: '¿Está seguro que desea generar la cotización?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Sí, generar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Limpiar localStorage antes de enviar
-                    limpiarLocalStorage();
-                    // Si confirma, enviar el formulario
-                    this.submit();
-                }
+            // Llenar el modal de fletes con los productos
+            llenarModalFletes();
+
+            // Abrir el modal
+            $('#modalCalculoFletes').modal('show');
+        });
+
+        // Función para llenar el modal de fletes
+        function llenarModalFletes() {
+            const tbody = document.getElementById('tbody-fletes');
+            tbody.innerHTML = '';
+
+            let contador = 0;
+            document.querySelectorAll('#tbody-productos tr[data-producto-id]').forEach(fila => {
+                contador++;
+                const productoId = fila.getAttribute('data-producto-id');
+
+                // Buscar el producto en productosDisponibles para obtener precio_base
+                const producto = productosDisponibles.find(p => p.id == productoId);
+                if (!producto) return;
+
+                const codigo = producto.codigo_producto;
+                const descripcion = producto.descripcion;
+                const cantidad = fila.querySelector('.cantidad-input').value;
+                const precioBase = parseFloat(producto.precio_base) || 0;
+
+                // Obtener valores guardados si existen
+                const datosGuardados = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+                const productoGuardado = datosGuardados.productos?.find(p => p.producto_id == productoId);
+
+                const filaFlete = document.createElement('tr');
+                filaFlete.setAttribute('data-producto-id', productoId);
+                filaFlete.setAttribute('data-precio-base-original', precioBase);
+                const precioBaseCotizacion = productoGuardado?.precio_base_cotizacion || precioBase;
+                filaFlete.innerHTML = `
+                    <td>${contador}</td>
+                    <td><strong>${codigo}</strong></td>
+                    <td>${descripcion}</td>
+                    <td class="text-center">${cantidad}</td>
+                    <td>
+                        <input type="number"
+                               class="form-control form-control-sm precio-base-input text-right"
+                               step="0.01"
+                               min="0"
+                               value="${precioBaseCotizacion.toFixed(2)}"
+                               onchange="calcularFilaFlete(this.closest('tr'))"
+                               onkeyup="calcularFilaFlete(this.closest('tr'))">
+                        <small class="text-muted d-block" style="font-size: 0.75rem;">
+                            Base: S/ ${precioBase.toFixed(2)}
+                        </small>
+                    </td>
+                    <td>
+                        <input type="number"
+                               class="form-control form-control-sm peso-unidad text-center"
+                               step="0.0001"
+                               min="0"
+                               value="${productoGuardado?.peso_unidad || ''}"
+                               onchange="calcularFilaFlete(this.closest('tr'))"
+                               onkeyup="calcularFilaFlete(this.closest('tr'))">
+                    </td>
+                    <td>
+                        <input type="number"
+                               class="form-control form-control-sm flete-tonelada text-center"
+                               step="0.01"
+                               min="0"
+                               value="${productoGuardado?.flete_tonelada || ''}"
+                               onchange="calcularFilaFlete(this.closest('tr'))"
+                               onkeyup="calcularFilaFlete(this.closest('tr'))">
+                    </td>
+                    <td>
+                        <input type="number"
+                               class="form-control form-control-sm margen-porcentaje text-center"
+                               step="0.01"
+                               min="0"
+                               value="${productoGuardado?.margen_porcentaje || ''}"
+                               onchange="calcularFilaFlete(this.closest('tr'))"
+                               onkeyup="calcularFilaFlete(this.closest('tr'))">
+                    </td>
+                    <td class="text-right flete-unitario">S/ 0.00</td>
+                    <td class="text-right costo-mas-flete">S/ 0.00</td>
+                    <td class="text-right total-kg">0.00</td>
+                    <td class="text-right margen-total">S/ 0.00</td>
+                    <td class="text-right flete-total">S/ 0.00</td>
+                `;
+
+                tbody.appendChild(filaFlete);
+
+                // Calcular la fila inicialmente
+                calcularFilaFlete(filaFlete);
             });
+
+            actualizarResumenFletes();
+        }
+
+        // Calcular valores de una fila de flete
+        function calcularFilaFlete(fila) {
+            const cantidad = parseFloat(fila.querySelector('td:nth-child(4)').textContent) || 0;
+            // Usar precio_base ingresado en el modal (puede ser diferente al precio base del producto)
+            const precioBase = parseFloat(fila.querySelector('.precio-base-input').value) || 0;
+            const pesoUnidad = parseFloat(fila.querySelector('.peso-unidad').value) || 0;
+            const fleteTonelada = parseFloat(fila.querySelector('.flete-tonelada').value) || 0;
+            const margenPorcentaje = parseFloat(fila.querySelector('.margen-porcentaje').value) || 0;
+
+            // Flete Unitario = (Peso x Unidad / 1000) × Flete x Tonelada
+            const fleteUnitario = (pesoUnidad / 1000) * fleteTonelada;
+
+            // Costo + Flete = Precio Base + Flete Unitario
+            const costoMasFlete = precioBase + fleteUnitario;
+
+            // Total KG = Cantidad × Peso x Unidad
+            const totalKg = cantidad * pesoUnidad;
+
+            // Margen Total = (costo + flete) × (% margen / 100) × Cantidad
+            const margenTotal = costoMasFlete * (margenPorcentaje / 100) * cantidad;
+
+            // Flete Total = Flete Unitario × Cantidad
+            const fleteTotal = fleteUnitario * cantidad;
+
+            // Actualizar celdas
+            fila.querySelector('.flete-unitario').textContent = 'S/ ' + fleteUnitario.toFixed(4);
+            fila.querySelector('.costo-mas-flete').textContent = 'S/ ' + costoMasFlete.toFixed(2);
+            fila.querySelector('.total-kg').textContent = totalKg.toFixed(4);
+            fila.querySelector('.margen-total').textContent = 'S/ ' + margenTotal.toFixed(2);
+            fila.querySelector('.flete-total').textContent = 'S/ ' + fleteTotal.toFixed(2);
+
+            // Actualizar resumen
+            actualizarResumenFletes();
+        }
+
+        // Actualizar resumen de fletes
+        function actualizarResumenFletes() {
+            let totalKg = 0;
+            let totalFlete = 0;
+            let totalMargen = 0;
+            let totalCostoFlete = 0;
+
+            document.querySelectorAll('#tbody-fletes tr[data-producto-id]').forEach(fila => {
+                totalKg += parseFloat(fila.querySelector('.total-kg').textContent) || 0;
+                totalFlete += parseFloat(fila.querySelector('.flete-total').textContent.replace('S/ ', '').trim()) || 0;
+                totalMargen += parseFloat(fila.querySelector('.margen-total').textContent.replace('S/ ', '').trim()) || 0;
+                totalCostoFlete += parseFloat(fila.querySelector('.costo-mas-flete').textContent.replace('S/ ', '').trim()) || 0;
+            });
+
+            document.getElementById('resumen-total-kg').textContent = totalKg.toFixed(4);
+            document.getElementById('resumen-total-flete').textContent = totalFlete.toFixed(2);
+            document.getElementById('resumen-total-margen').textContent = totalMargen.toFixed(2);
+            document.getElementById('resumen-total-costo-flete').textContent = totalCostoFlete.toFixed(2);
+        }
+
+        // Confirmar y guardar cotización con datos de flete
+        document.getElementById('btn-confirmar-fletes').addEventListener('click', function() {
+            // Recopilar datos de flete y agregarlos al formulario
+            const productosFlete = [];
+
+            document.querySelectorAll('#tbody-fletes tr[data-producto-id]').forEach(fila => {
+                const productoId = fila.getAttribute('data-producto-id');
+                const precioBaseOriginal = parseFloat(fila.getAttribute('data-precio-base-original')) || 0;
+                const precioBaseCotizacion = parseFloat(fila.querySelector('.precio-base-input').value) || 0;
+                const pesoUnidad = parseFloat(fila.querySelector('.peso-unidad').value) || 0;
+                const fleteTonelada = parseFloat(fila.querySelector('.flete-tonelada').value) || 0;
+                const margenPorcentaje = parseFloat(fila.querySelector('.margen-porcentaje').value) || 0;
+                const fleteUnitario = parseFloat(fila.querySelector('.flete-unitario').textContent.replace('S/ ', '').trim()) || 0;
+                const costoMasFlete = parseFloat(fila.querySelector('.costo-mas-flete').textContent.replace('S/ ', '').trim()) || 0;
+                const totalKg = parseFloat(fila.querySelector('.total-kg').textContent) || 0;
+                const margenTotal = parseFloat(fila.querySelector('.margen-total').textContent.replace('S/ ', '').trim()) || 0;
+                const fleteTotal = parseFloat(fila.querySelector('.flete-total').textContent.replace('S/ ', '').trim()) || 0;
+
+                productosFlete.push({
+                    producto_id: productoId,
+                    precio_base_original: precioBaseOriginal,
+                    precio_base_cotizacion: precioBaseCotizacion,
+                    peso_unidad: pesoUnidad,
+                    flete_tonelada: fleteTonelada,
+                    margen_porcentaje: margenPorcentaje,
+                    flete_unitario: fleteUnitario,
+                    costo_mas_flete: costoMasFlete,
+                    total_kg: totalKg,
+                    margen_total: margenTotal,
+                    flete_total: fleteTotal
+                });
+            });
+
+            // Agregar campos hidden al formulario con los datos de flete
+            productosFlete.forEach((prod, index) => {
+                const productoId = prod.producto_id;
+                Object.keys(prod).forEach(key => {
+                    if (key !== 'producto_id') {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = `productos[${productoId}][${key}]`;
+                        input.value = prod[key];
+                        document.getElementById('formCotizacion').appendChild(input);
+                    }
+                });
+            });
+
+            // Agregar campo para indicar si se debe actualizar el precio base
+            const actualizarPrecioBase = document.getElementById('actualizar-precio-base').checked;
+            const inputActualizar = document.createElement('input');
+            inputActualizar.type = 'hidden';
+            inputActualizar.name = 'actualizar_precio_base';
+            inputActualizar.value = actualizarPrecioBase ? '1' : '0';
+            document.getElementById('formCotizacion').appendChild(inputActualizar);
+
+            // Cerrar modal
+            $('#modalCalculoFletes').modal('hide');
+
+            // Limpiar localStorage antes de enviar
+            limpiarLocalStorage();
+
+            // Enviar formulario
+            document.getElementById('formCotizacion').submit();
         });
 
         // Calcular total al cargar
@@ -1185,7 +1472,21 @@
                                             <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
                                         </button>
                                     </form>
-                                    <div id="alertWhatsApp" class="mt-2"></div>
+                                    <div id="alertWhatsApp" class="mt-2">                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="actualizar-precio-base" checked>
+                                    <label class="form-check-label" for="actualizar-precio-base">
+                                        <strong>Actualizar precio base del producto automáticamente</strong>
+                                        <br>
+                                        <small>Si está marcado, el precio base del producto se actualizará con el nuevo valor ingresado en esta cotización.</small>
+                                    </label>
                                 </div>
                             </div>
                         </div>

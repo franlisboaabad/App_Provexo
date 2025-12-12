@@ -103,6 +103,11 @@
                                        title="Ver">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    <a href="{{ route('admin.productos.historial-precios', $producto) }}"
+                                       class="btn btn-secondary btn-sm"
+                                       title="Historial de Precios">
+                                        <i class="fas fa-history"></i>
+                                    </a>
                                 @endcan
 
                                 @can('admin.productos.edit')

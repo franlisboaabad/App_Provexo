@@ -149,6 +149,91 @@
                             </tfoot>
                         </table>
                     </div>
+
+                    @php
+                        // Verificar si hay productos con datos de flete
+                        $productosConFlete = $cotizacione->productos->filter(function($item) {
+                            return !is_null($item->peso_unidad) && !is_null($item->flete_tonelada);
+                        });
+                        $tieneFletes = $productosConFlete->count() > 0;
+
+                        // Calcular totales de fletes
+                        $totalKg = $productosConFlete->sum('total_kg') ?? 0;
+                        $totalFlete = $productosConFlete->sum('flete_total') ?? 0;
+                        $totalMargen = $productosConFlete->sum('margen_total') ?? 0;
+                        $totalCostoFlete = $productosConFlete->sum('costo_mas_flete') ?? 0;
+                    @endphp
+
+                    @if($tieneFletes)
+                        <hr>
+                        <h5><i class="fas fa-truck"></i> Resumen de Fletes y Margen</h5>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Código</th>
+                                                <th>Descripción</th>
+                                                <th class="text-center">Cantidad</th>
+                                                <th class="text-right">Precio Base</th>
+                                                <th class="text-center">Peso x Unidad (kg)</th>
+                                                <th class="text-center">Flete x Tonelada (S/)</th>
+                                                <th class="text-center">% Margen</th>
+                                                <th class="text-right">Flete Unit.</th>
+                                                <th class="text-right">Costo + Flete</th>
+                                                <th class="text-right">Total KG</th>
+                                                <th class="text-right">Margen Total</th>
+                                                <th class="text-right">Flete Total (S/)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($productosConFlete as $index => $item)
+                                                <tr>
+                                                    <td>{{ $index + 1 }}</td>
+                                                    <td><strong>{{ $item->producto->codigo_producto }}</strong></td>
+                                                    <td>{{ $item->producto->descripcion }}</td>
+                                                    <td class="text-center">{{ $item->cantidad }}</td>
+                                                    <td class="text-right">
+                                                        @php
+                                                            $precioBaseMostrar = $item->precio_base_cotizacion ?? $item->producto->precio_base;
+                                                        @endphp
+                                                        S/ {{ number_format($precioBaseMostrar, 2) }}
+                                                        @if($item->precio_base_cotizacion && abs($item->precio_base_cotizacion - $item->producto->precio_base) > 0.01)
+                                                            <br><small class="text-info" title="Precio base modificado en esta cotización">
+                                                                <i class="fas fa-info-circle"></i> Base: S/ {{ number_format($item->producto->precio_base, 2) }}
+                                                            </small>
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-center">{{ number_format($item->peso_unidad, 4) }}</td>
+                                                    <td class="text-center">S/ {{ number_format($item->flete_tonelada, 2) }}</td>
+                                                    <td class="text-center">{{ number_format($item->margen_porcentaje, 2) }}%</td>
+                                                    <td class="text-right">S/ {{ number_format($item->flete_unitario, 4) }}</td>
+                                                    <td class="text-right">S/ {{ number_format($item->costo_mas_flete, 2) }}</td>
+                                                    <td class="text-right">{{ number_format($item->total_kg, 4) }}</td>
+                                                    <td class="text-right">S/ {{ number_format($item->margen_total, 2) }}</td>
+                                                    <td class="text-right">S/ {{ number_format($item->flete_total, 2) }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                        <tfoot class="table-info">
+                                            <tr>
+                                                <td colspan="10" class="text-right"><strong>RESUMEN TOTAL:</strong></td>
+                                                <td class="text-right"><strong>{{ number_format($totalKg, 4) }} kg</strong></td>
+                                                <td class="text-right"><strong>S/ {{ number_format($totalMargen, 2) }}</strong></td>
+                                                <td class="text-right"><strong>S/ {{ number_format($totalFlete, 2) }}</strong></td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="9" class="text-right"><strong>Total Costo + Flete:</strong></td>
+                                                <td class="text-right" colspan="4"><strong>S/ {{ number_format($totalCostoFlete, 2) }}</strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

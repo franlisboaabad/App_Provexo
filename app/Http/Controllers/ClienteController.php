@@ -135,7 +135,13 @@ class ClienteController extends Controller
     public function show(Cliente $cliente)
     {
         $cliente->load('user');
-        return view('admin.clientes.show', compact('cliente'));
+        $cotizaciones = $cliente->cotizaciones()
+            ->with('productos.producto')
+            ->orderBy('fecha_emision', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.clientes.show', compact('cliente', 'cotizaciones'));
     }
 
     /**

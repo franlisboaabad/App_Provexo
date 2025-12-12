@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Producto;
 use App\Models\Proveedor;
+use App\Models\HistorialPrecioProducto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class ProductoController extends Controller
         $this->middleware('can:admin.productos.index')->only('index');
         $this->middleware('can:admin.productos.create')->only('create', 'store', 'import');
         $this->middleware('can:admin.productos.edit')->only('edit', 'update');
-        $this->middleware('can:admin.productos.show')->only('show');
+        $this->middleware('can:admin.productos.show')->only('show', 'historialPrecios');
         $this->middleware('can:admin.productos.destroy')->only('destroy');
     }
 
@@ -172,6 +173,20 @@ class ProductoController extends Controller
                 ->withInput()
                 ->withErrors(['error' => 'Error al actualizar producto. Intente nuevamente.']);
         }
+    }
+
+    /**
+     * Mostrar historial de precios de un producto
+     */
+    public function historialPrecios(Producto $producto)
+    {
+        $producto->load('proveedor.user');
+        $historial = HistorialPrecioProducto::where('producto_id', $producto->id)
+            ->with('usuario', 'cotizacion')
+            ->recientes()
+            ->paginate(20);
+
+        return view('admin.productos.historial-precios', compact('producto', 'historial'));
     }
 
     /**

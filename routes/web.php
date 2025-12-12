@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
     // Administración de productos
     Route::resource('productos', ProductoController::class)->names('admin.productos');
     Route::post('productos/import', [ProductoController::class, 'import'])->name('admin.productos.import');
+    Route::get('productos/{producto}/historial-precios', [ProductoController::class, 'historialPrecios'])->name('admin.productos.historial-precios');
 
     // Administración de cotizaciones
     Route::resource('cotizaciones', CotizacionController::class)->names('admin.cotizaciones');
