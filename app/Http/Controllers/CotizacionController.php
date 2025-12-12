@@ -6,10 +6,13 @@ use App\Models\Cotizacion;
 use App\Models\CotizacionProducto;
 use App\Models\Cliente;
 use App\Models\Producto;
+use App\Models\Empresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class CotizacionController extends Controller
 {
@@ -19,7 +22,7 @@ class CotizacionController extends Controller
         $this->middleware('can:admin.cotizaciones.index')->only('index');
         $this->middleware('can:admin.cotizaciones.create')->only('create', 'store');
         $this->middleware('can:admin.cotizaciones.edit')->only('edit', 'update');
-        $this->middleware('can:admin.cotizaciones.show')->only('show');
+        $this->middleware('can:admin.cotizaciones.show')->only('show', 'pdf');
         $this->middleware('can:admin.cotizaciones.destroy')->only('destroy');
     }
 
@@ -288,6 +291,66 @@ class CotizacionController extends Controller
 
             return back()
                 ->withErrors(['error' => 'Error al eliminar cotización. Intente nuevamente.']);
+        }
+    }
+
+    /**
+     * Generar PDF de la cotización
+     */
+    public function pdf(Cotizacion $cotizacione)
+    {
+        Log::info('Generando PDF de cotización', ['cotizacion_id' => $cotizacione->id]);
+
+        try {
+            // Cargar relaciones necesarias
+            $cotizacione->load('cliente.user', 'productos.producto');
+
+            // Obtener empresa principal
+            $empresa = Empresa::where('es_principal', true)->first();
+
+            // Si no hay empresa principal, obtener la primera activa
+            if (!$empresa) {
+                $empresa = Empresa::activas()->first();
+            }
+
+            // Si todavía no hay empresa, crear una estructura vacía
+            if (!$empresa) {
+                $empresa = new Empresa();
+            }
+
+            // Cargar cuentas bancarias activas
+            $cuentasBancarias = $empresa->id ? $empresa->cuentasBancarias()->where('activa', true)->get() : collect([]);
+
+            // Renderizar la vista
+            $html = view('admin.cotizaciones.pdf', compact('cotizacione', 'empresa', 'cuentasBancarias'))->render();
+
+            // Configurar opciones de Dompdf
+            $options = new Options();
+            $options->set('isRemoteEnabled', true);
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('defaultFont', 'Arial');
+
+            // Crear instancia de Dompdf
+            $dompdf = new Dompdf($options);
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            // Generar nombre del archivo
+            $filename = 'cotizacion-' . $cotizacione->numero_cotizacion . '.pdf';
+
+            // Descargar el PDF
+            return $dompdf->stream($filename, ['Attachment' => false]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al generar PDF de cotización', [
+                'cotizacion_id' => $cotizacione->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()
+                ->withErrors(['error' => 'Error al generar el PDF. Intente nuevamente.']);
         }
     }
 }

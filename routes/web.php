@@ -7,6 +7,9 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\CotizacionController;
+use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\SerieCotizacionController;
+use App\Http\Controllers\CuentaBancariaController;
 use App\Http\Controllers\Dashboard;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +53,20 @@ Route::middleware('auth')->group(function () {
 
     // Administración de cotizaciones
     Route::resource('cotizaciones', CotizacionController::class)->names('admin.cotizaciones');
+    Route::get('cotizaciones/{cotizacione}/pdf', [CotizacionController::class, 'pdf'])->name('admin.cotizaciones.pdf');
+
+    // Administración de empresas
+    Route::resource('empresas', EmpresaController::class)->names('admin.empresas');
+
+    // Series de cotización (nested dentro de empresas)
+    Route::post('empresas/{empresa}/series', [SerieCotizacionController::class, 'store'])->name('admin.series.store');
+    Route::put('series/{serieCotizacion}', [SerieCotizacionController::class, 'update'])->name('admin.series.update');
+    Route::delete('series/{serieCotizacion}', [SerieCotizacionController::class, 'destroy'])->name('admin.series.destroy');
+
+    // Cuentas bancarias (nested dentro de empresas)
+    Route::post('empresas/{empresa}/cuentas', [CuentaBancariaController::class, 'store'])->name('admin.cuentas.store');
+    Route::put('cuentas/{cuentaBancaria}', [CuentaBancariaController::class, 'update'])->name('admin.cuentas.update');
+    Route::delete('cuentas/{cuentaBancaria}', [CuentaBancariaController::class, 'destroy'])->name('admin.cuentas.destroy');
 });
 
 

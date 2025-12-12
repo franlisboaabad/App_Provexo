@@ -346,6 +346,12 @@ return [
             'icon' => 'fas fa-box',
             'can' => 'admin.productos.index',
         ],
+        [
+            'text' => 'Empresas',
+            'route' => 'admin.empresas.index',
+            'icon' => 'fas fa-building',
+            'can' => 'admin.empresas.index',
+        ],
 
         ['header' => 'VENTAS'],
         [

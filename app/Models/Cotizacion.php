@@ -70,15 +70,40 @@ class Cotizacion extends Model
     /**
      * Generar número de cotización automático
      */
-    public static function generarNumeroCotizacion(): string
+    public static function generarNumeroCotizacion($serieId = null): string
     {
+        // Si se proporciona un ID de serie, usarlo directamente
+        if ($serieId) {
+            $serieCotizacion = \App\Models\SerieCotizacion::find($serieId);
+            if ($serieCotizacion && $serieCotizacion->activa) {
+                $serie = $serieCotizacion->serie;
+            } else {
+                $serie = 'COT';
+            }
+        } else {
+            // Obtener empresa principal y su serie principal
+            $empresa = \App\Models\Empresa::where('es_principal', true)->first();
+            if ($empresa) {
+                $seriePrincipal = $empresa->seriePrincipal;
+                $serie = $seriePrincipal ? $seriePrincipal->serie : 'COT';
+            } else {
+                $serie = 'COT';
+            }
+        }
+
         $anio = date('Y');
-        $ultimaCotizacion = self::whereYear('created_at', $anio)
+        $ultimaCotizacion = self::where('numero_cotizacion', 'like', $serie . '-' . $anio . '-%')
             ->orderBy('id', 'desc')
             ->first();
 
-        $numero = $ultimaCotizacion ? (int)substr($ultimaCotizacion->numero_cotizacion, -4) + 1 : 1;
+        if ($ultimaCotizacion) {
+            // Extraer el número de la última cotización
+            $partes = explode('-', $ultimaCotizacion->numero_cotizacion);
+            $numero = (int)end($partes) + 1;
+        } else {
+            $numero = 1;
+        }
 
-        return 'COT-' . $anio . '-' . str_pad($numero, 4, '0', STR_PAD_LEFT);
+        return $serie . '-' . $anio . '-' . str_pad($numero, 4, '0', STR_PAD_LEFT);
     }
 }

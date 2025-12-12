@@ -57,6 +57,13 @@ class RoleSeeder extends Seeder
                 'admin.cotizaciones.show' => 'Ver cotización',
                 'admin.cotizaciones.destroy' => 'Eliminar cotización',
             ],
+            'empresas' => [
+                'admin.empresas.index' => 'Lista de empresas',
+                'admin.empresas.create' => 'Crear empresa',
+                'admin.empresas.edit' => 'Editar empresa',
+                'admin.empresas.show' => 'Ver empresa',
+                'admin.empresas.destroy' => 'Eliminar empresa',
+            ],
         ];
     }
 

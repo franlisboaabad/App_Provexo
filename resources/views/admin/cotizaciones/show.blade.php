@@ -19,6 +19,9 @@
                             <i class="fas fa-edit"></i> Editar Cotización
                         </a>
                     @endcan
+                    <a href="{{ route('admin.cotizaciones.pdf', $cotizacione) }}" class="btn btn-danger btn-sm" target="_blank">
+                        <i class="fas fa-file-pdf"></i> Descargar PDF
+                    </a>
                 </div>
                 <div class="card-body">
                     <div class="row">
