@@ -83,34 +83,39 @@
                                 @endcan
                             </td>
                             <td>
-                                @can('admin.cotizaciones.show')
-                                    <a href="{{ route('admin.cotizaciones.show', $cotizacion) }}"
-                                       class="btn btn-info btn-sm"
-                                       title="Ver">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                @endcan
-
-                                @can('admin.cotizaciones.edit')
-                                    <a href="{{ route('admin.cotizaciones.edit', $cotizacion) }}"
-                                       class="btn btn-warning btn-sm"
-                                       title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                @endcan
-
-                                @can('admin.cotizaciones.destroy')
-                                    <form action="{{ route('admin.cotizaciones.destroy', $cotizacion) }}"
-                                          method="POST"
-                                          style="display: inline-block;"
-                                          onsubmit="return confirm('¿Está seguro de eliminar esta cotización? Esta acción no se puede deshacer.');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                @endcan
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-cog"></i> Acciones
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        @can('admin.cotizaciones.show')
+                                            <a class="dropdown-item" href="{{ route('admin.cotizaciones.show', $cotizacion) }}">
+                                                <i class="fas fa-eye text-info"></i> Ver Detalle
+                                            </a>
+                                        @endcan
+                                        <a class="dropdown-item" href="#" onclick="abrirModalPreview({{ $cotizacion->id }}, '{{ $cotizacion->numero_cotizacion }}'); return false;">
+                                            <i class="fas fa-file-pdf text-danger"></i> Preview PDF
+                                        </a>
+                                        @can('admin.cotizaciones.edit')
+                                            <a class="dropdown-item" href="{{ route('admin.cotizaciones.edit', $cotizacion) }}">
+                                                <i class="fas fa-edit text-warning"></i> Editar
+                                            </a>
+                                        @endcan
+                                        @can('admin.cotizaciones.destroy')
+                                            <div class="dropdown-divider"></div>
+                                            <form action="{{ route('admin.cotizaciones.destroy', $cotizacion) }}"
+                                                  method="POST"
+                                                  style="display: inline-block;"
+                                                  onsubmit="return confirm('¿Está seguro de eliminar esta cotización? Esta acción no se puede deshacer.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; width: 100%; text-align: left; padding: 0.25rem 1.5rem;">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -120,6 +125,127 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Modal Preview PDF con Acciones -->
+    <div class="modal fade" id="modalPreviewCotizacion" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white">
+                        <i class="fas fa-file-pdf text-white"></i> Preview de Cotización: <span id="modal-numero-cotizacion"></span>
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Columna Izquierda: Preview -->
+                        <div class="col-md-7">
+                            <h6 class="font-weight-bold mb-3">
+                                <i class="fas fa-file-pdf text-danger"></i> Vista Previa
+                            </h6>
+                            <div class="border p-3" style="background-color: #f8f9fa; min-height: 500px;">
+                                <iframe id="previewPdfModal" src=""
+                                        style="width: 100%; height: 500px; border: none;"></iframe>
+                            </div>
+                        </div>
+
+                        <!-- Columna Derecha: Acciones Rápidas -->
+                        <div class="col-md-5">
+                            <h6 class="font-weight-bold mb-3">
+                                <i class="fas fa-bolt"></i> Acciones Rápidas
+                            </h6>
+
+                            <!-- Descargar PDF -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-download text-primary"></i> Descargar PDF
+                                    </h6>
+                                    <p class="card-text text-muted small">Descarga la cotización en formato PDF</p>
+                                    <a href="#" id="btn-descargar-pdf" class="btn btn-primary btn-block" target="_blank" download>
+                                        <i class="fas fa-file-pdf"></i> Descargar Cotización
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Enviar por Email -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-envelope text-success"></i> Enviar por Email
+                                    </h6>
+                                    <p class="card-text text-muted small">Envía la cotización por correo electrónico</p>
+                                    <form id="formEnviarEmailModal" onsubmit="enviarEmailModal(event)">
+                                        @csrf
+                                        <div class="form-group">
+                                            <input type="email"
+                                                   class="form-control"
+                                                   id="emailClienteModal"
+                                                   placeholder="correo@ejemplo.com"
+                                                   required>
+                                        </div>
+                                        <button type="submit" class="btn btn-success btn-block">
+                                            <i class="fas fa-paper-plane"></i> Enviar Email
+                                        </button>
+                                    </form>
+                                    <div id="alertEmailModal" class="mt-2"></div>
+                                </div>
+                            </div>
+
+                            <!-- Enviar por WhatsApp -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fab fa-whatsapp text-success"></i> Enviar por WhatsApp
+                                    </h6>
+                                    <p class="card-text text-muted small">Envía la cotización directamente por WhatsApp</p>
+
+                                    <!-- Radio buttons para seleccionar tipo de WhatsApp -->
+                                    <div class="form-group mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="whatsappTipoModal" id="whatsappWebModal" value="web" checked>
+                                            <label class="form-check-label" for="whatsappWebModal">
+                                                WhatsApp Web
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="whatsappTipoModal" id="whatsappDesktopModal" value="desktop">
+                                            <label class="form-check-label" for="whatsappDesktopModal">
+                                                WhatsApp Desktop (Windows)
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <form id="formEnviarWhatsAppModal" onsubmit="enviarWhatsAppModal(event)">
+                                        @csrf
+                                        <div class="form-group">
+                                            <input type="tel"
+                                                   class="form-control"
+                                                   id="telefonoWhatsAppModal"
+                                                   placeholder="+51 987 654 321"
+                                                   required>
+                                            <small class="form-text text-muted">Incluye código de país (ej: +51)</small>
+                                        </div>
+                                        <button type="submit" class="btn btn-success btn-block">
+                                            <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+                                        </button>
+                                    </form>
+                                    <div id="alertWhatsAppModal" class="mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cerrar
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 @stop
@@ -267,6 +393,97 @@
                 }
             });
         });
+
+        // Variable global para almacenar el ID de la cotización actual en el modal
+        let cotizacionIdModal = null;
+
+        // Función para abrir el modal de preview
+        function abrirModalPreview(cotizacionId, numeroCotizacion) {
+            cotizacionIdModal = cotizacionId;
+
+            // Actualizar el título del modal
+            document.getElementById('modal-numero-cotizacion').textContent = numeroCotizacion;
+
+            // Actualizar el iframe con la URL del PDF
+            const pdfUrl = `/cotizaciones/${cotizacionId}/pdf`;
+            document.getElementById('previewPdfModal').src = pdfUrl;
+
+            // Actualizar el enlace de descarga
+            document.getElementById('btn-descargar-pdf').href = pdfUrl;
+
+            // Limpiar formularios
+            document.getElementById('formEnviarEmailModal').reset();
+            document.getElementById('formEnviarWhatsAppModal').reset();
+            document.getElementById('alertEmailModal').innerHTML = '';
+            document.getElementById('alertWhatsAppModal').innerHTML = '';
+
+            // Abrir el modal
+            $('#modalPreviewCotizacion').modal('show');
+        }
+
+        // Función para enviar email desde el modal
+        function enviarEmailModal(event) {
+            event.preventDefault();
+            const email = document.getElementById('emailClienteModal').value;
+            const alertDiv = document.getElementById('alertEmailModal');
+
+            fetch(`/cotizaciones/${cotizacionIdModal}/enviar-email`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alertDiv.innerHTML = '<div class="alert alert-success">¡Email enviado exitosamente!</div>';
+                    document.getElementById('formEnviarEmailModal').reset();
+                } else {
+                    alertDiv.innerHTML = '<div class="alert alert-danger">' + (data.message || 'Error al enviar el email') + '</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alertDiv.innerHTML = '<div class="alert alert-danger">Error al enviar el email. Por favor, intente nuevamente.</div>';
+            });
+        }
+
+        // Función para enviar WhatsApp desde el modal
+        function enviarWhatsAppModal(event) {
+            event.preventDefault();
+            const telefono = document.getElementById('telefonoWhatsAppModal').value.replace(/\s+/g, '');
+            const tipo = document.querySelector('input[name="whatsappTipoModal"]:checked').value;
+            const alertDiv = document.getElementById('alertWhatsAppModal');
+
+            // Obtener URL pública
+            fetch(`/cotizaciones/${cotizacionIdModal}/publica`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const mensaje = encodeURIComponent('Hola, te comparto la cotización: ' + data.url);
+                    let urlWhatsApp = '';
+
+                    if (tipo === 'web') {
+                        // WhatsApp Web
+                        urlWhatsApp = `https://web.whatsapp.com/send?phone=${telefono}&text=${mensaje}`;
+                    } else {
+                        // WhatsApp Desktop (Windows) - usa wa.me que abre la app si está instalada
+                        urlWhatsApp = `https://wa.me/${telefono}?text=${mensaje}`;
+                    }
+
+                    window.open(urlWhatsApp, '_blank');
+                    alertDiv.innerHTML = '<div class="alert alert-success">Redirigiendo a WhatsApp...</div>';
+                } else {
+                    alertDiv.innerHTML = '<div class="alert alert-danger">Error al generar el enlace. Intente nuevamente.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alertDiv.innerHTML = '<div class="alert alert-danger">Error al generar el enlace. Por favor, intente nuevamente.</div>';
+            });
+        }
     </script>
 @stop
 
