@@ -423,19 +423,11 @@
         }
 
         function mostrarInformacionSeguimiento(venta) {
-            // Definir estados de entrega en orden
-            const estadosEntrega = [
-                { valor: 'registro_creado', texto: 'Recibimos tu pedido', icono: 'fa-inbox' },
-                { valor: 'recogido', texto: 'Pedido confirmado', icono: 'fa-check-circle' },
-                { valor: 'en_bodega_origen', texto: 'Preparando producto', icono: 'fa-box' },
-                { valor: 'salida_almacen', texto: 'Listo para enviar', icono: 'fa-shipping-fast' },
-                { valor: 'en_transito', texto: 'En tránsito', icono: 'fa-truck' },
-                { valor: 'en_reparto', texto: 'En reparto', icono: 'fa-route' },
-                { valor: 'entregado', texto: 'Pedido entregado', icono: 'fa-check-double' }
-            ];
+            // Usar estados de entrega desde el backend (dinámico)
+            const estadosEntrega = venta.estados_entrega_timeline || [];
 
             // Obtener el índice del estado actual
-            const estadoActual = venta.estado_entrega || 'registro_creado';
+            const estadoActual = venta.estado_entrega || estadosEntrega[0]?.valor || '';
             const indiceActual = estadosEntrega.findIndex(e => e.valor === estadoActual);
 
             // Formatear fecha desde string (formato: "dd mes - HH:mm hrs.")

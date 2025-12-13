@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('historial_estado_entrega_ventas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('venta_id')->constrained('ventas')->onDelete('cascade');
-            $table->enum('estado_entrega', ['registro_creado', 'recogido', 'en_bodega_origen', 'salida_almacen', 'en_transito', 'en_reparto', 'entregado'])->comment('Estado de entrega registrado');
+            $table->enum('estado_entrega', ['Solicitud_recibida', 'En_preparación', 'En_transito', 'En_reparto', 'Entregado'])->comment('Estado de entrega registrado');
             $table->foreignId('usuario_id')->nullable()->constrained('users')->onDelete('set null')->comment('Usuario que realizó el cambio');
             $table->text('observaciones')->nullable()->comment('Observaciones sobre el cambio de estado');
             $table->timestamps();

@@ -98,7 +98,7 @@ class VentaController extends Controller
             'monto_vendido' => ['required', 'numeric', 'min:0'],
             'nota' => ['nullable', 'string'],
             'estado_pedido' => ['nullable', 'in:pendiente,en_proceso,entregado,cancelado'],
-            'estado_entrega' => ['nullable', 'in:registro_creado,recogido,en_bodega_origen,salida_almacen,en_transito,en_reparto,entregado'],
+            'estado_entrega' => ['nullable', 'in:' . Venta::getEstadosEntregaString()],
             'adelanto' => ['nullable', 'numeric', 'min:0'],
             'monto_transporte' => ['nullable', 'numeric', 'min:0'], // Mantener para compatibilidad
             'nombre_transporte' => ['nullable', 'string', 'max:255'], // Mantener para compatibilidad
@@ -140,7 +140,7 @@ class VentaController extends Controller
                     'monto_vendido' => $validated['monto_vendido'],
                     'nota' => $validated['nota'] ?? null,
                     'estado_pedido' => $validated['estado_pedido'] ?? 'pendiente',
-                    'estado_entrega' => $validated['estado_entrega'] ?? 'registro_creado',
+                    'estado_entrega' => $validated['estado_entrega'] ?? Venta::getEstadoEntregaDefault(),
                     'adelanto' => $validated['adelanto'] ?? 0,
                     'monto_transporte' => $validated['monto_transporte'] ?? 0, // Mantener para compatibilidad
                     'nombre_transporte' => $validated['nombre_transporte'] ?? null, // Mantener para compatibilidad
@@ -219,7 +219,7 @@ class VentaController extends Controller
                     'restante' => number_format($venta->restante, 2),
                     'estado_pedido' => $venta->estado_pedido,
                     'estado_pedido_texto' => ucfirst(str_replace('_', ' ', $venta->estado_pedido)),
-                    'estado_entrega' => $venta->estado_entrega ?? 'registro_creado',
+                    'estado_entrega' => $venta->estado_entrega ?? Venta::getEstadoEntregaDefault(),
                     'estado_entrega_texto' => $venta->estado_entrega_texto ?? 'Registro Creado',
                     'estado_entrega_badge_class' => $venta->estado_entrega_badge_class ?? 'secondary',
                     'monto_transporte' => number_format($venta->monto_transporte, 2),
@@ -230,6 +230,7 @@ class VentaController extends Controller
                     'codigo_seguimiento' => $venta->codigo_seguimiento ?? 'N/A',
                     'nota' => $venta->nota,
                     'fecha_creacion' => $venta->created_at->format('d/m/Y H:i'),
+                    'estados_entrega_timeline' => Venta::getEstadosEntregaParaTimeline(),
                     'historial_estados_entrega' => $venta->historialEstadosEntrega->map(function($historial) {
                         return [
                             'id' => $historial->id,
@@ -280,7 +281,7 @@ class VentaController extends Controller
             'monto_vendido' => ['required', 'numeric', 'min:0'],
             'nota' => ['nullable', 'string'],
             'estado_pedido' => ['required', 'in:pendiente,en_proceso,entregado,cancelado'],
-            'estado_entrega' => ['nullable', 'in:registro_creado,recogido,en_bodega_origen,salida_almacen,en_transito,en_reparto,entregado'],
+            'estado_entrega' => ['nullable', 'in:' . Venta::getEstadosEntregaString()],
             'adelanto' => ['nullable', 'numeric', 'min:0'],
             'monto_transporte' => ['nullable', 'numeric', 'min:0'], // Mantener para compatibilidad
             'nombre_transporte' => ['nullable', 'string', 'max:255'], // Mantener para compatibilidad
@@ -449,7 +450,7 @@ class VentaController extends Controller
     public function actualizarEstadoEntrega(Request $request, Venta $venta)
     {
         $validated = $request->validate([
-            'estado_entrega' => ['required', 'in:registro_creado,recogido,en_bodega_origen,salida_almacen,en_transito,en_reparto,entregado'],
+            'estado_entrega' => ['required', 'in:' . Venta::getEstadosEntregaString()],
             'observaciones' => ['nullable', 'string', 'max:500'],
         ]);
 

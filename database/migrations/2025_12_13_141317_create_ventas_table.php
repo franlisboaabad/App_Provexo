@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('monto_vendido', 10, 2)->default(0)->comment('Monto final de la venta (puede diferir del cotizado)');
             $table->text('nota')->nullable()->comment('Observaciones o notas sobre la venta');
             $table->enum('estado_pedido', ['pendiente', 'en_proceso', 'entregado', 'cancelado'])->default('pendiente')->comment('Estado del pedido/entrega');
-            $table->enum('estado_entrega', ['registro_creado', 'recogido', 'en_bodega_origen', 'salida_almacen', 'en_transito', 'en_reparto', 'entregado'])->default('registro_creado')->comment('Estado del proceso de entrega');
+            $table->enum('estado_entrega', ['Solicitud_recibida','En_preparación','En_transito','En_reparto','Entregado'])->default('Solicitud_recibida')->comment('Estado del proceso de entrega');
             $table->decimal('adelanto', 10, 2)->default(0)->comment('Monto de adelanto recibido');
             $table->decimal('monto_transporte', 10, 2)->default(0)->comment('Costo de transporte');
             $table->string('nombre_transporte', 255)->nullable()->comment('Nombre de la empresa/transportista');

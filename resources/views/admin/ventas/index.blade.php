@@ -118,13 +118,9 @@
                                         <select class="form-control form-control-sm cambiar-estado-entrega"
                                                 data-venta-id="{{ $venta->id }}"
                                                 style="min-width: 150px;">
-                                            <option value="registro_creado" {{ ($venta->estado_entrega ?? 'registro_creado') == 'registro_creado' ? 'selected' : '' }}>Registro Creado</option>
-                                            <option value="recogido" {{ ($venta->estado_entrega ?? '') == 'recogido' ? 'selected' : '' }}>Recogido</option>
-                                            <option value="en_bodega_origen" {{ ($venta->estado_entrega ?? '') == 'en_bodega_origen' ? 'selected' : '' }}>En Bodega Origen</option>
-                                            <option value="salida_almacen" {{ ($venta->estado_entrega ?? '') == 'salida_almacen' ? 'selected' : '' }}>Salida de Almacén</option>
-                                            <option value="en_transito" {{ ($venta->estado_entrega ?? '') == 'en_transito' ? 'selected' : '' }}>En Tránsito</option>
-                                            <option value="en_reparto" {{ ($venta->estado_entrega ?? '') == 'en_reparto' ? 'selected' : '' }}>En Reparto</option>
-                                            <option value="entregado" {{ ($venta->estado_entrega ?? '') == 'entregado' ? 'selected' : '' }}>Entregado</option>
+                                            @foreach(\App\Models\Venta::getEstadosEntregaParaSelect() as $valor => $texto)
+                                                <option value="{{ $valor }}" {{ ($venta->estado_entrega ?? \App\Models\Venta::getEstadoEntregaDefault()) == $valor ? 'selected' : '' }}>{{ $texto }}</option>
+                                            @endforeach
                                         </select>
                                     @endif
                                 </td>

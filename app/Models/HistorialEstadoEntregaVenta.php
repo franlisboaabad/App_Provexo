@@ -41,20 +41,10 @@ class HistorialEstadoEntregaVenta extends Model
     }
 
     /**
-     * Obtener texto del estado de entrega
+     * Obtener texto del estado de entrega (usa método centralizado del Model Venta)
      */
     public function getEstadoEntregaTextoAttribute(): string
     {
-        $estados = [
-            'registro_creado' => 'Recibimos tu pedido',
-            'recogido' => 'Pedido confirmado',
-            'en_bodega_origen' => 'Preparando producto',
-            'salida_almacen' => 'Listo para enviar',
-            'en_transito' => 'En tránsito',
-            'en_reparto' => 'En reparto',
-            'entregado' => 'Pedido entregado',
-        ];
-
-        return $estados[$this->estado_entrega] ?? $this->estado_entrega;
+        return Venta::getTextoEstadoEntregaCliente($this->estado_entrega);
     }
 }

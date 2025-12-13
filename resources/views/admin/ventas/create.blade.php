@@ -120,13 +120,9 @@
                         <div class="form-group">
                             <label for="estado_entrega">Estado de Entrega</label>
                             <select name="estado_entrega" id="estado_entrega" class="form-control">
-                                <option value="registro_creado" {{ old('estado_entrega', 'registro_creado') == 'registro_creado' ? 'selected' : '' }}>Registro Creado</option>
-                                <option value="recogido" {{ old('estado_entrega') == 'recogido' ? 'selected' : '' }}>Recogido</option>
-                                <option value="en_bodega_origen" {{ old('estado_entrega') == 'en_bodega_origen' ? 'selected' : '' }}>En Bodega Origen</option>
-                                <option value="salida_almacen" {{ old('estado_entrega') == 'salida_almacen' ? 'selected' : '' }}>Salida de Almacén</option>
-                                <option value="en_transito" {{ old('estado_entrega') == 'en_transito' ? 'selected' : '' }}>En Tránsito</option>
-                                <option value="en_reparto" {{ old('estado_entrega') == 'en_reparto' ? 'selected' : '' }}>En Reparto</option>
-                                <option value="entregado" {{ old('estado_entrega') == 'entregado' ? 'selected' : '' }}>Entregado</option>
+                                @foreach(\App\Models\Venta::getEstadosEntregaParaSelect() as $valor => $texto)
+                                    <option value="{{ $valor }}" {{ old('estado_entrega', \App\Models\Venta::getEstadoEntregaDefault()) == $valor ? 'selected' : '' }}>{{ $texto }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>

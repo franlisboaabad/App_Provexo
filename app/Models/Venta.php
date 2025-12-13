@@ -148,21 +148,173 @@ class Venta extends Model
     }
 
     /**
+     * ============================================
+     * MÉTODOS ESTÁTICOS PARA ESTADOS DE ENTREGA
+     * Centralizados para facilitar mantenimiento
+     * ============================================
+     */
+
+    /**
+     * Obtener configuración completa de estados de entrega
+     * Este es el único lugar donde se definen los estados
+     *
+     * @return array Array con la configuración de cada estado
+     */
+    public static function getConfiguracionEstadosEntrega(): array
+    {
+        return [
+            'Solicitud_recibida' => [
+                'texto' => 'Solicitud Recibida',
+                'texto_cliente' => 'Recibimos tu pedido',
+                'badge_class' => 'secondary',
+                'icono' => 'fa-inbox',
+            ],
+            'En_preparación' => [
+                'texto' => 'En Preparación',
+                'texto_cliente' => 'Preparando tu pedido',
+                'badge_class' => 'primary',
+                'icono' => 'fa-box',
+            ],
+            'En_transito' => [
+                'texto' => 'En Tránsito',
+                'texto_cliente' => 'En tránsito',
+                'badge_class' => 'warning',
+                'icono' => 'fa-truck',
+            ],
+            'En_reparto' => [
+                'texto' => 'En Reparto',
+                'texto_cliente' => 'En reparto',
+                'badge_class' => 'info',
+                'icono' => 'fa-route',
+            ],
+            'Entregado' => [
+                'texto' => 'Entregado',
+                'texto_cliente' => 'Pedido entregado',
+                'badge_class' => 'success',
+                'icono' => 'fa-check-double',
+            ],
+        ];
+    }
+
+    /**
+     * Obtener string de estados separados por comas (para validaciones)
+     *
+     * @return string
+     */
+    public static function getEstadosEntregaString(): string
+    {
+        return implode(',', array_keys(self::getConfiguracionEstadosEntrega()));
+    }
+
+    /**
+     * Obtener estado por defecto
+     *
+     * @return string
+     */
+    public static function getEstadoEntregaDefault(): string
+    {
+        return 'Solicitud_recibida';
+    }
+
+    /**
+     * Obtener texto del estado (para admin)
+     *
+     * @param string|null $estado
+     * @return string
+     */
+    public static function getTextoEstadoEntrega(?string $estado): string
+    {
+        if (!$estado) {
+            return '';
+        }
+
+        $config = self::getConfiguracionEstadosEntrega();
+        return $config[$estado]['texto'] ?? $estado;
+    }
+
+    /**
+     * Obtener texto del estado para cliente
+     *
+     * @param string|null $estado
+     * @return string
+     */
+    public static function getTextoEstadoEntregaCliente(?string $estado): string
+    {
+        if (!$estado) {
+            return '';
+        }
+
+        $config = self::getConfiguracionEstadosEntrega();
+        return $config[$estado]['texto_cliente'] ?? $estado;
+    }
+
+    /**
+     * Obtener clase CSS para badge del estado
+     *
+     * @param string|null $estado
+     * @return string
+     */
+    public static function getBadgeClassEstadoEntrega(?string $estado): string
+    {
+        if (!$estado) {
+            return 'secondary';
+        }
+
+        $config = self::getConfiguracionEstadosEntrega();
+        return $config[$estado]['badge_class'] ?? 'secondary';
+    }
+
+
+    /**
+     * Obtener array de estados para timeline (frontend)
+     *
+     * @return array
+     */
+    public static function getEstadosEntregaParaTimeline(): array
+    {
+        $config = self::getConfiguracionEstadosEntrega();
+        $timeline = [];
+
+        foreach ($config as $valor => $data) {
+            $timeline[] = [
+                'valor' => $valor,
+                'texto' => $data['texto_cliente'],
+                'icono' => $data['icono'],
+            ];
+        }
+
+        return $timeline;
+    }
+
+    /**
+     * Obtener array de estados con texto para dropdowns
+     *
+     * @return array ['valor' => 'Texto']
+     */
+    public static function getEstadosEntregaParaSelect(): array
+    {
+        $config = self::getConfiguracionEstadosEntrega();
+        $select = [];
+
+        foreach ($config as $valor => $data) {
+            $select[$valor] = $data['texto'];
+        }
+
+        return $select;
+    }
+
+    /**
+     * ============================================
+     * ACCESSORS (usan los métodos estáticos)
+     * ============================================
+     */
+
+    /**
      * Obtener texto del estado de entrega
      */
     public function getEstadoEntregaTextoAttribute(): string
     {
-        $estados = [
-            'registro_creado' => 'Registro Creado',
-            'recogido' => 'Recogido',
-            'en_bodega_origen' => 'En Bodega Origen',
-            'salida_almacen' => 'Salida de Almacén',
-            'en_transito' => 'En Tránsito',
-            'en_reparto' => 'En Reparto',
-            'entregado' => 'Entregado',
-        ];
-
-        return $estados[$this->estado_entrega] ?? $this->estado_entrega;
+        return self::getTextoEstadoEntrega($this->estado_entrega);
     }
 
     /**
@@ -170,17 +322,7 @@ class Venta extends Model
      */
     public function getEstadoEntregaBadgeClassAttribute(): string
     {
-        $clases = [
-            'registro_creado' => 'secondary',
-            'recogido' => 'info',
-            'en_bodega_origen' => 'primary',
-            'salida_almacen' => 'warning',
-            'en_transito' => 'warning',
-            'en_reparto' => 'info',
-            'entregado' => 'success',
-        ];
-
-        return $clases[$this->estado_entrega] ?? 'secondary';
+        return self::getBadgeClassEstadoEntrega($this->estado_entrega);
     }
 
     /**
