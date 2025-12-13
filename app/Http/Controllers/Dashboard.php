@@ -24,22 +24,39 @@ class Dashboard extends Controller
         // Si el usuario es Cliente, mostrar dashboard simplificado
         if ($user->hasRole('Cliente')) {
             $cliente = $user->cliente;
-            
+
             if (!$cliente) {
                 // Si no tiene perfil de cliente, redirigir al perfil
                 return redirect()->route('profile.edit')
                     ->with('warning', 'Por favor completa tu perfil de cliente.');
             }
 
-            // Contar solo las cotizaciones del cliente
-            $totalCotizaciones = Cotizacion::where('cliente_id', $cliente->id)->count();
-            $cotizacionesPendientes = Cotizacion::where('cliente_id', $cliente->id)
-                ->where('estado', 'pendiente')
-                ->count();
+            // Obtener cotizaciones del cliente para el Kanban (2 columnas)
+            $cotizaciones = Cotizacion::where('cliente_id', $cliente->id)
+                ->with(['venta'])
+                ->orderBy('fecha_emision', 'desc')
+                ->get();
+
+            // Separar en dos grupos: sin venta y con venta
+            $solicitudesCotizacion = $cotizaciones->filter(function($cotizacion) {
+                return !$cotizacion->venta; // Sin venta asociada
+            });
+
+            $ordenesCotizadasVenta = $cotizaciones->filter(function($cotizacion) {
+                return $cotizacion->venta; // Con venta asociada
+            });
+
+            // Contar totales
+            $totalCotizaciones = $cotizaciones->count();
+            $totalSolicitudes = $solicitudesCotizacion->count();
+            $totalOrdenes = $ordenesCotizadasVenta->count();
 
             return view('dashboard-cliente', compact(
                 'totalCotizaciones',
-                'cotizacionesPendientes'
+                'totalSolicitudes',
+                'totalOrdenes',
+                'solicitudesCotizacion',
+                'ordenesCotizadasVenta'
             ));
         }
 

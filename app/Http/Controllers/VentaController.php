@@ -158,6 +158,29 @@ class VentaController extends Controller
     {
         $venta->load(['cotizacion.cliente', 'cotizacion.productos.producto']);
 
+        // Si es una petición AJAX, devolver JSON
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'venta' => [
+                    'id' => $venta->id,
+                    'monto_vendido' => number_format($venta->monto_vendido, 2),
+                    'adelanto' => number_format($venta->adelanto, 2),
+                    'restante' => number_format($venta->restante, 2),
+                    'estado_pedido' => $venta->estado_pedido,
+                    'estado_pedido_texto' => ucfirst(str_replace('_', ' ', $venta->estado_pedido)),
+                    'monto_transporte' => number_format($venta->monto_transporte, 2),
+                    'nombre_transporte' => $venta->nombre_transporte ?? 'N/A',
+                    'nota' => $venta->nota,
+                    'fecha_creacion' => $venta->created_at->format('d/m/Y H:i'),
+                    'cotizacion' => [
+                        'numero' => $venta->cotizacion->numero_cotizacion,
+                        'total' => number_format($venta->cotizacion->total, 2),
+                    ]
+                ]
+            ]);
+        }
+
         return view('admin.ventas.show', compact('venta'));
     }
 

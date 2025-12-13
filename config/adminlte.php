@@ -360,6 +360,14 @@ return [
             'can' => 'admin.proveedores.index',
         ],
 
+        ['header' => 'REPORTES'],
+        [
+            'text' => 'Dashboard de Reportes',
+            'route' => 'admin.reportes.dashboard',
+            'icon' => 'fas fa-chart-bar',
+            'can' => 'admin.reportes.index',
+        ],
+
         ['header' => 'ADMINISTRACIÓN'],
         [
             'text' => 'Configuración',

@@ -104,6 +104,9 @@ class RoleSeeder extends Seeder
                 'admin.configuracion-documentos.edit' => 'Editar configuración de documentos',
                 'admin.configuracion-documentos.update' => 'Actualizar configuración de documentos',
             ],
+            'reportes' => [
+                'admin.reportes.index' => 'Ver dashboard de reportes',
+            ],
         ];
     }
 
