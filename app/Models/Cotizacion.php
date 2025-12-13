@@ -61,6 +61,38 @@ class Cotizacion extends Model
     }
 
     /**
+     * Relación con Venta (uno a uno)
+     */
+    public function venta()
+    {
+        return $this->hasOne(Venta::class);
+    }
+
+    /**
+     * Verificar si la cotización tiene una venta asociada
+     */
+    public function tieneVenta(): bool
+    {
+        return $this->venta !== null;
+    }
+
+    /**
+     * Verificar si la cotización está ganada
+     */
+    public function esGanada(): bool
+    {
+        return $this->estado === 'ganado';
+    }
+
+    /**
+     * Verificar si la cotización está perdida
+     */
+    public function esPerdida(): bool
+    {
+        return $this->estado === 'perdido';
+    }
+
+    /**
      * Scope para cotizaciones pendientes
      */
     public function scopePendientes($query)
@@ -74,6 +106,22 @@ class Cotizacion extends Model
     public function scopeAprobadas($query)
     {
         return $query->where('estado', 'aprobada');
+    }
+
+    /**
+     * Scope para cotizaciones ganadas
+     */
+    public function scopeGanadas($query)
+    {
+        return $query->where('estado', 'ganado');
+    }
+
+    /**
+     * Scope para cotizaciones perdidas
+     */
+    public function scopePerdidas($query)
+    {
+        return $query->where('estado', 'perdido');
     }
 
     /**

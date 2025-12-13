@@ -48,6 +48,8 @@
                     <option value="aprobada" {{ request('estado') == 'aprobada' ? 'selected' : '' }}>Aprobada</option>
                     <option value="rechazada" {{ request('estado') == 'rechazada' ? 'selected' : '' }}>Rechazada</option>
                     <option value="vencida" {{ request('estado') == 'vencida' ? 'selected' : '' }}>Vencida</option>
+                    <option value="ganado" {{ request('estado') == 'ganado' ? 'selected' : '' }}>Ganado</option>
+                    <option value="perdido" {{ request('estado') == 'perdido' ? 'selected' : '' }}>Perdido</option>
                 </select>
             </div>
         </div>
@@ -59,8 +61,7 @@
                         <th>Número</th>
                         <th>Cliente</th>
                         <th>Fecha Emisión</th>
-                        <th>Fecha Vencimiento</th>
-                        <th>Total</th>
+                        <th>Monto Cotizado</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
@@ -72,7 +73,6 @@
                             <td><strong>{{ $cotizacion->numero_cotizacion }}</strong></td>
                             <td>{{ $cotizacion->cliente->user->name ?? 'N/A' }}</td>
                             <td>{{ $cotizacion->fecha_emision->format('d/m/Y') }}</td>
-                            <td>{{ $cotizacion->fecha_vencimiento ? $cotizacion->fecha_vencimiento->format('d/m/Y') : 'N/A' }}</td>
                             <td><strong>S/ {{ number_format($cotizacion->total, 2) }}</strong></td>
                             <td>
                                 @can('admin.cotizaciones.edit')
@@ -83,6 +83,8 @@
                                         <option value="aprobada" {{ $cotizacion->estado == 'aprobada' ? 'selected' : '' }}>Aprobada</option>
                                         <option value="rechazada" {{ $cotizacion->estado == 'rechazada' ? 'selected' : '' }}>Rechazada</option>
                                         <option value="vencida" {{ $cotizacion->estado == 'vencida' ? 'selected' : '' }}>Vencida</option>
+                                        <option value="ganado" {{ $cotizacion->estado == 'ganado' ? 'selected' : '' }}>Ganado</option>
+                                        <option value="perdido" {{ $cotizacion->estado == 'perdido' ? 'selected' : '' }}>Perdido</option>
                                     </select>
                                 @else
                                     @if($cotizacion->estado == 'aprobada')
@@ -91,6 +93,10 @@
                                         <span class="badge badge-danger">Rechazada</span>
                                     @elseif($cotizacion->estado == 'vencida')
                                         <span class="badge badge-warning">Vencida</span>
+                                    @elseif($cotizacion->estado == 'ganado')
+                                        <span class="badge badge-success">Ganado</span>
+                                    @elseif($cotizacion->estado == 'perdido')
+                                        <span class="badge badge-danger">Perdido</span>
                                     @else
                                         <span class="badge badge-info">Pendiente</span>
                                     @endif
@@ -115,6 +121,24 @@
                                                 <i class="fas fa-edit text-warning"></i> Editar
                                             </a>
                                         @endcan
+                                        @can('admin.ventas.create')
+                                            @if(!$cotizacion->venta && in_array($cotizacion->estado, ['aprobada', 'pendiente']))
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item" href="{{ route('admin.ventas.create', ['cotizacion_id' => $cotizacion->id]) }}">
+                                                    <i class="fas fa-hand-holding-usd text-success"></i> Convertir en Venta
+                                                </a>
+                                            @elseif($cotizacion->venta)
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item" href="{{ route('admin.ventas.show', $cotizacion->venta) }}">
+                                                    <i class="fas fa-eye text-primary"></i> Ver Venta
+                                                </a>
+                                                @can('admin.ventas.edit')
+                                                    <a class="dropdown-item" href="{{ route('admin.ventas.edit', $cotizacion->venta) }}">
+                                                        <i class="fas fa-edit text-warning"></i> Editar Venta
+                                                    </a>
+                                                @endcan
+                                            @endif
+                                        @endcan
                                         @can('admin.cotizaciones.destroy')
                                             <div class="dropdown-divider"></div>
                                             <form action="{{ route('admin.cotizaciones.destroy', $cotizacion) }}"
@@ -134,7 +158,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center">No hay cotizaciones registradas</td>
+                            <td colspan="7" class="text-center">No hay cotizaciones registradas</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -264,6 +288,7 @@
             </div>
         </div>
     </div>
+
 @stop
 
 @section('css')
@@ -310,7 +335,7 @@
                 "pageLength": 25,
                 "order": [[0, "desc"]],
                 "columnDefs": [
-                    { "orderable": false, "targets": 6 } // Estado no ordenable
+                    { "orderable": false, "targets": [5, 6] } // Estado, Acciones no ordenables
                 ]
             });
 
@@ -318,16 +343,16 @@
             $.fn.dataTable.ext.search.push(
                 function(settings, data, dataIndex) {
                     var estadoFiltro = $('#filtroEstado').val();
-                    
+
                     // Si no hay filtro, mostrar todas las filas
                     if (!estadoFiltro) {
                         return true;
                     }
-                    
-                    // Obtener el valor del select en la columna de estado (índice 6)
-                    var estadoFila = $(table.row(dataIndex).node()).find('.cambiar-estado').val() || 
-                                    $(table.row(dataIndex).node()).find('td:eq(6)').text().toLowerCase();
-                    
+
+                    // Obtener el valor del select en la columna de estado (índice 5)
+                    var estadoFila = $(table.row(dataIndex).node()).find('.cambiar-estado').val() ||
+                                    $(table.row(dataIndex).node()).find('td:eq(5)').text().toLowerCase();
+
                     // Comparar estados
                     return estadoFila === estadoFiltro || estadoFila.toLowerCase().includes(estadoFiltro.toLowerCase());
                 }
@@ -460,7 +485,7 @@
             const formWhatsApp = document.getElementById('formEnviarWhatsAppModal');
             const alertEmail = document.getElementById('alertEmailModal');
             const alertWhatsApp = document.getElementById('alertWhatsAppModal');
-            
+
             if (formEmail) {
                 formEmail.reset();
             }
@@ -541,6 +566,7 @@
                 alertDiv.innerHTML = '<div class="alert alert-danger">Error al generar el enlace. Por favor, intente nuevamente.</div>';
             });
         }
+
     </script>
 @stop
 

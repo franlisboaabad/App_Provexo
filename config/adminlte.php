@@ -328,7 +328,13 @@ return [
             // Los clientes pueden ver sus cotizaciones, los admin también
         ],
         [
-            'text' => 'Documentos de Clientes',
+            'text' => 'Ventas',
+            'route' => 'admin.ventas.index',
+            'icon' => 'fas fa-hand-holding-usd',
+            'can' => 'admin.ventas.index',
+        ],
+        [
+            'text' => 'Archivos',
             'route' => 'admin.documentos-clientes.index',
             'icon' => 'fas fa-folder-open',
             'can' => 'admin.documentos-clientes.index',

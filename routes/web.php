@@ -7,6 +7,7 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\CotizacionController;
+use App\Http\Controllers\VentaController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\SerieCotizacionController;
 use App\Http\Controllers\CuentaBancariaController;
@@ -77,12 +78,17 @@ Route::middleware('auth')->group(function () {
     Route::resource('cotizaciones', CotizacionController::class)->names('admin.cotizaciones');
     Route::get('cotizaciones/{cotizacione}/pdf', [CotizacionController::class, 'pdf'])->name('admin.cotizaciones.pdf');
     Route::get('cotizaciones/{cotizacione}/publica', [CotizacionController::class, 'publica'])->name('admin.cotizaciones.publica');
+    Route::get('cotizaciones/{cotizacione}/venta', [CotizacionController::class, 'obtenerVenta'])->name('admin.cotizaciones.venta');
     Route::post('cotizaciones/{cotizacione}/enviar-email', [CotizacionController::class, 'enviarEmail'])->name('admin.cotizaciones.enviar-email');
     Route::post('cotizaciones/{cotizacione}/cambiar-estado', [CotizacionController::class, 'cambiarEstado'])->name('admin.cotizaciones.cambiar-estado');
 
+    // Administración de ventas
+    Route::resource('ventas', VentaController::class)->names('admin.ventas');
+    Route::post('ventas/{venta}/actualizar-estado-pedido', [VentaController::class, 'actualizarEstadoPedido'])->name('admin.ventas.actualizar-estado-pedido');
+
     // Administración de empresas
     Route::resource('empresas', EmpresaController::class)->names('admin.empresas');
-    
+
     // Rutas helper para acceso directo a empresa principal
     Route::get('empresa-principal', function() {
         $empresa = \App\Models\Empresa::where('es_principal', true)->first();

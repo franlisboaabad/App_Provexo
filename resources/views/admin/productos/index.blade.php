@@ -97,39 +97,39 @@
                                 @endif
                             </td>
                             <td>
-                                @can('admin.productos.show')
-                                    <a href="{{ route('admin.productos.show', $producto) }}"
-                                       class="btn btn-info btn-sm"
-                                       title="Ver">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ route('admin.productos.historial-precios', $producto) }}"
-                                       class="btn btn-secondary btn-sm"
-                                       title="Historial de Precios">
-                                        <i class="fas fa-history"></i>
-                                    </a>
-                                @endcan
-
-                                @can('admin.productos.edit')
-                                    <a href="{{ route('admin.productos.edit', $producto) }}"
-                                       class="btn btn-warning btn-sm"
-                                       title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                @endcan
-
-                                @can('admin.productos.destroy')
-                                    <form action="{{ route('admin.productos.destroy', $producto) }}"
-                                          method="POST"
-                                          style="display: inline-block;"
-                                          onsubmit="return confirm('¿Está seguro de eliminar este producto? Esta acción no se puede deshacer.');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                @endcan
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-cog"></i> Acciones
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        @can('admin.productos.show')
+                                            <a class="dropdown-item" href="{{ route('admin.productos.show', $producto) }}">
+                                                <i class="fas fa-eye text-info"></i> Ver Detalle
+                                            </a>
+                                            <a class="dropdown-item" href="{{ route('admin.productos.historial-precios', $producto) }}">
+                                                <i class="fas fa-history text-secondary"></i> Historial de Precios
+                                            </a>
+                                        @endcan
+                                        @can('admin.productos.edit')
+                                            <a class="dropdown-item" href="{{ route('admin.productos.edit', $producto) }}">
+                                                <i class="fas fa-edit text-warning"></i> Editar
+                                            </a>
+                                        @endcan
+                                        @can('admin.productos.destroy')
+                                            <div class="dropdown-divider"></div>
+                                            <form action="{{ route('admin.productos.destroy', $producto) }}"
+                                                  method="POST"
+                                                  style="display: inline-block;"
+                                                  onsubmit="return confirm('¿Está seguro de eliminar este producto? Esta acción no se puede deshacer.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; width: 100%; text-align: left; padding: 0.25rem 1.5rem;">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -244,7 +244,10 @@ PROD003,Producto Ejemplo 3,5.00,8.50,0,litro</pre>
                     "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
                 },
                 "pageLength": 25,
-                "order": [[0, "desc"]]
+                "order": [[0, "desc"]],
+                "columnDefs": [
+                    { "orderable": false, "targets": [8] } // Acciones no ordenable
+                ]
             });
         });
     </script>

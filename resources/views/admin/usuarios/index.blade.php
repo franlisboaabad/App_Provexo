@@ -69,13 +69,18 @@
                                 @endif
                             </td>
                             <td>
-                                @can('admin.usuarios.edit')
-                                    <a href="{{ route('admin.usuarios.edit', $usuario) }}"
-                                       class="btn btn-warning btn-sm"
-                                       title="Editar usuario y roles">
-                                        <i class="fas fa-edit"></i> Editar
-                                    </a>
-                                @endcan
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-cog"></i> Acciones
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        @can('admin.usuarios.edit')
+                                            <a class="dropdown-item" href="{{ route('admin.usuarios.edit', $usuario) }}">
+                                                <i class="fas fa-edit text-warning"></i> Editar Usuario y Roles
+                                            </a>
+                                        @endcan
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -107,7 +112,10 @@
                     "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
                 },
                 "pageLength": 25,
-                "order": [[0, "desc"]]
+                "order": [[0, "desc"]],
+                "columnDefs": [
+                    { "orderable": false, "targets": [5] } // Acciones no ordenable
+                ]
             });
         });
     </script>

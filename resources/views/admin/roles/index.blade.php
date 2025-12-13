@@ -69,13 +69,18 @@
                                 <span class="badge badge-success">{{ $role->users->count() }} usuario(s)</span>
                             </td>
                             <td>
-                                @can('admin.roles.edit')
-                                    <a href="{{ route('admin.roles.edit', $role) }}"
-                                       class="btn btn-warning btn-sm"
-                                       title="Editar rol y permisos">
-                                        <i class="fas fa-edit"></i> Editar
-                                    </a>
-                                @endcan
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-cog"></i> Acciones
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        @can('admin.roles.edit')
+                                            <a class="dropdown-item" href="{{ route('admin.roles.edit', $role) }}">
+                                                <i class="fas fa-edit text-warning"></i> Editar Rol y Permisos
+                                            </a>
+                                        @endcan
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -107,7 +112,10 @@
                     "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
                 },
                 "pageLength": 25,
-                "order": [[0, "desc"]]
+                "order": [[0, "desc"]],
+                "columnDefs": [
+                    { "orderable": false, "targets": [4] } // Acciones no ordenable
+                ]
             });
         });
     </script>

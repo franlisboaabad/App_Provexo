@@ -74,34 +74,36 @@
                                 @endif
                             </td>
                             <td>
-                                @can('admin.empresas.show')
-                                    <a href="{{ route('admin.empresas.show', $empresa) }}"
-                                       class="btn btn-info btn-sm"
-                                       title="Ver">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                @endcan
-
-                                @can('admin.empresas.edit')
-                                    <a href="{{ route('admin.empresas.edit', $empresa) }}"
-                                       class="btn btn-warning btn-sm"
-                                       title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                @endcan
-
-                                @can('admin.empresas.destroy')
-                                    <form action="{{ route('admin.empresas.destroy', $empresa) }}"
-                                          method="POST"
-                                          style="display: inline-block;"
-                                          onsubmit="return confirm('¿Está seguro de eliminar esta empresa? Esta acción no se puede deshacer.');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                @endcan
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-cog"></i> Acciones
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        @can('admin.empresas.show')
+                                            <a class="dropdown-item" href="{{ route('admin.empresas.show', $empresa) }}">
+                                                <i class="fas fa-eye text-info"></i> Ver Detalle
+                                            </a>
+                                        @endcan
+                                        @can('admin.empresas.edit')
+                                            <a class="dropdown-item" href="{{ route('admin.empresas.edit', $empresa) }}">
+                                                <i class="fas fa-edit text-warning"></i> Editar
+                                            </a>
+                                        @endcan
+                                        @can('admin.empresas.destroy')
+                                            <div class="dropdown-divider"></div>
+                                            <form action="{{ route('admin.empresas.destroy', $empresa) }}"
+                                                  method="POST"
+                                                  style="display: inline-block;"
+                                                  onsubmit="return confirm('¿Está seguro de eliminar esta empresa? Esta acción no se puede deshacer.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; width: 100%; text-align: left; padding: 0.25rem 1.5rem;">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -133,7 +135,10 @@
                     "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
                 },
                 "pageLength": 25,
-                "order": [[0, "desc"]]
+                "order": [[0, "desc"]],
+                "columnDefs": [
+                    { "orderable": false, "targets": [7] } // Acciones no ordenable
+                ]
             });
         });
     </script>

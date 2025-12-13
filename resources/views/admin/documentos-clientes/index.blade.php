@@ -122,38 +122,38 @@
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="{{ route('admin.documentos-clientes.download', $documento->id) }}"
-                                       class="btn btn-info btn-sm"
-                                       title="Descargar"
-                                       target="_blank">
-                                        <i class="fas fa-download"></i>
-                                    </a>
-                                    @can('admin.documentos-clientes.show')
-                                        <a href="{{ route('admin.documentos-clientes.show', $documento->id) }}"
-                                           class="btn btn-secondary btn-sm"
-                                           title="Ver">
-                                            <i class="fas fa-eye"></i>
+                                    <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-cog"></i> Acciones
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        <a class="dropdown-item" href="{{ route('admin.documentos-clientes.download', $documento->id) }}"
+                                           target="_blank">
+                                            <i class="fas fa-download text-info"></i> Descargar
                                         </a>
-                                    @endcan
-                                    @can('admin.documentos-clientes.edit')
-                                        <a href="{{ route('admin.documentos-clientes.edit', $documento->id) }}"
-                                           class="btn btn-warning btn-sm"
-                                           title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    @endcan
-                                    @can('admin.documentos-clientes.destroy')
-                                        <form action="{{ route('admin.documentos-clientes.destroy', $documento->id) }}"
-                                              method="POST"
-                                              style="display: inline-block;"
-                                              onsubmit="return confirm('¿Está seguro de eliminar este documento? Esta acción no se puede deshacer.');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    @endcan
+                                        @can('admin.documentos-clientes.show')
+                                            <a class="dropdown-item" href="{{ route('admin.documentos-clientes.show', $documento->id) }}">
+                                                <i class="fas fa-eye text-secondary"></i> Ver Detalle
+                                            </a>
+                                        @endcan
+                                        @can('admin.documentos-clientes.edit')
+                                            <a class="dropdown-item" href="{{ route('admin.documentos-clientes.edit', $documento->id) }}">
+                                                <i class="fas fa-edit text-warning"></i> Editar
+                                            </a>
+                                        @endcan
+                                        @can('admin.documentos-clientes.destroy')
+                                            <div class="dropdown-divider"></div>
+                                            <form action="{{ route('admin.documentos-clientes.destroy', $documento->id) }}"
+                                                  method="POST"
+                                                  style="display: inline-block;"
+                                                  onsubmit="return confirm('¿Está seguro de eliminar este documento? Esta acción no se puede deshacer.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; width: 100%; text-align: left; padding: 0.25rem 1.5rem;">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                            </form>
+                                        @endcan
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -176,7 +176,10 @@
                     "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
                 },
                 "pageLength": 25,
-                "order": [[0, "desc"]]
+                "order": [[0, "desc"]],
+                "columnDefs": [
+                    { "orderable": false, "targets": [9] } // Acciones no ordenable
+                ]
             });
         });
     </script>

@@ -27,6 +27,7 @@ class CotizacionController extends Controller
         $this->middleware('can:admin.cotizaciones.edit')->only('edit', 'update', 'cambiarEstado');
         $this->middleware('can:admin.cotizaciones.publica')->only('publica');
         $this->middleware('can:admin.cotizaciones.enviar-email')->only('enviarEmail');
+        $this->middleware('can:admin.cotizaciones.venta')->only('obtenerVenta');
         $this->middleware('can:admin.cotizaciones.destroy')->only('destroy');
     }
 
@@ -49,7 +50,7 @@ class CotizacionController extends Controller
             }
 
             $query = Cotizacion::where('cliente_id', $cliente->id)
-                ->with('cliente.user', 'productos.producto');
+                ->with('cliente.user', 'productos.producto', 'venta');
 
             // Filtrar por estado si se proporciona
             if ($request->has('estado') && $request->estado) {
@@ -63,7 +64,7 @@ class CotizacionController extends Controller
                 abort(403, 'No tienes permiso para ver cotizaciones.');
             }
 
-            $query = Cotizacion::with('cliente.user', 'productos.producto');
+            $query = Cotizacion::with('cliente.user', 'productos.producto', 'venta');
 
             // Filtrar por estado si se proporciona
             if ($request->has('estado') && $request->estado) {
@@ -283,8 +284,34 @@ class CotizacionController extends Controller
             }
         }
 
-        $cotizacione->load('cliente.user', 'productos.producto');
+        $cotizacione->load('cliente.user', 'productos.producto', 'venta');
         return view('admin.cotizaciones.show', compact('cotizacione'));
+    }
+
+    /**
+     * Obtener datos de venta de una cotización (para AJAX)
+     */
+    public function obtenerVenta(Cotizacion $cotizacione)
+    {
+        $cotizacione->load('venta');
+
+        return response()->json([
+            'success' => true,
+            'cotizacion' => [
+                'id' => $cotizacione->id,
+                'estado' => $cotizacione->estado,
+            ],
+            'venta' => $cotizacione->venta ? [
+                'id' => $cotizacione->venta->id,
+                'monto_vendido' => $cotizacione->venta->monto_vendido,
+                'nota' => $cotizacione->venta->nota,
+                'estado_pedido' => $cotizacione->venta->estado_pedido,
+                'adelanto' => $cotizacione->venta->adelanto,
+                'monto_transporte' => $cotizacione->venta->monto_transporte,
+                'nombre_transporte' => $cotizacione->venta->nombre_transporte,
+                'margen_bruto_con_transporte' => $cotizacione->venta->margen_bruto_con_transporte,
+            ] : null
+        ]);
     }
 
     /**
@@ -454,7 +481,7 @@ class CotizacionController extends Controller
     public function cambiarEstado(Request $request, Cotizacion $cotizacione)
     {
         $validated = $request->validate([
-            'estado' => ['required', 'in:pendiente,aprobada,rechazada,vencida'],
+            'estado' => ['required', 'in:pendiente,aprobada,rechazada,vencida,ganado,perdido'],
         ]);
 
         try {
