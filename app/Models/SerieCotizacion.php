@@ -18,6 +18,7 @@ class SerieCotizacion extends Model
         'descripcion',
         'activa',
         'es_principal',
+        'correlativo_inicial',
     ];
 
     protected $casts = [

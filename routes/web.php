@@ -82,6 +82,19 @@ Route::middleware('auth')->group(function () {
 
     // Administración de empresas
     Route::resource('empresas', EmpresaController::class)->names('admin.empresas');
+    
+    // Rutas helper para acceso directo a empresa principal
+    Route::get('empresa-principal', function() {
+        $empresa = \App\Models\Empresa::where('es_principal', true)->first();
+        if (!$empresa) {
+            $empresa = \App\Models\Empresa::first();
+        }
+        if ($empresa) {
+            return redirect()->route('admin.empresas.show', $empresa);
+        }
+        return redirect()->route('admin.empresas.index')
+            ->with('warning', 'No hay empresas registradas. Por favor, cree una empresa primero.');
+    })->name('admin.empresa.principal');
 
     // Series de cotización (nested dentro de empresas)
     Route::post('empresas/{empresa}/series', [SerieCotizacionController::class, 'store'])->name('admin.series.store');
@@ -92,6 +105,10 @@ Route::middleware('auth')->group(function () {
     Route::post('empresas/{empresa}/cuentas', [CuentaBancariaController::class, 'store'])->name('admin.cuentas.store');
     Route::put('cuentas/{cuentaBancaria}', [CuentaBancariaController::class, 'update'])->name('admin.cuentas.update');
     Route::delete('cuentas/{cuentaBancaria}', [CuentaBancariaController::class, 'destroy'])->name('admin.cuentas.destroy');
+
+    // Configuración de documentos de cotización
+    Route::get('configuracion-documentos-cotizacion/edit', [\App\Http\Controllers\Admin\ConfiguracionDocumentosCotizacionController::class, 'edit'])->name('admin.configuracion-documentos.edit');
+    Route::put('configuracion-documentos-cotizacion', [\App\Http\Controllers\Admin\ConfiguracionDocumentosCotizacionController::class, 'update'])->name('admin.configuracion-documentos.update');
 });
 
 

@@ -169,6 +169,7 @@
                                         <tr>
                                             <th>Serie</th>
                                             <th>Descripción</th>
+                                            <th>Correlativo Inicial</th>
                                             <th>Estado</th>
                                             <th>Principal</th>
                                             <th>Acciones</th>
@@ -179,6 +180,7 @@
                                             <tr>
                                                 <td><strong>{{ $serie->serie }}</strong></td>
                                                 <td>{{ $serie->descripcion ?? '-' }}</td>
+                                                <td><strong>{{ $serie->correlativo_inicial ?? 1 }}</strong></td>
                                                 <td>
                                                     @if($serie->activa)
                                                         <span class="badge badge-success">Activa</span>
@@ -194,7 +196,7 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <button type="button" class="btn btn-sm btn-warning" onclick="editarSerie({{ $serie->id }}, '{{ $serie->serie }}', '{{ $serie->descripcion ?? '' }}', {{ $serie->activa ? 'true' : 'false' }}, {{ $serie->es_principal ? 'true' : 'false' }})">
+                                                    <button type="button" class="btn btn-sm btn-warning" onclick="editarSerie({{ $serie->id }}, '{{ $serie->serie }}', '{{ $serie->descripcion ?? '' }}', {{ $serie->correlativo_inicial ?? 1 }}, {{ $serie->activa ? 'true' : 'false' }}, {{ $serie->es_principal ? 'true' : 'false' }})">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                     <form action="{{ route('admin.series.destroy', $serie) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('¿Está seguro de eliminar esta serie?');">
@@ -320,6 +322,11 @@
                             <label for="descripcion_serie">Descripción</label>
                             <input type="text" class="form-control" id="descripcion_serie" name="descripcion" maxlength="255">
                         </div>
+                        <div class="form-group">
+                            <label for="correlativo_inicial_serie">Correlativo Inicial <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="correlativo_inicial_serie" name="correlativo_inicial" value="1" min="1" required>
+                            <small class="form-text text-muted">Número desde el cual comenzarán las cotizaciones de esta serie</small>
+                        </div>
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="activa_serie" name="activa" value="1" checked>
                             <label class="form-check-label" for="activa_serie">Serie Activa</label>
@@ -359,6 +366,11 @@
                         <div class="form-group">
                             <label for="descripcion_serie_edit">Descripción</label>
                             <input type="text" class="form-control" id="descripcion_serie_edit" name="descripcion" maxlength="255">
+                        </div>
+                        <div class="form-group">
+                            <label for="correlativo_inicial_serie_edit">Correlativo Inicial <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="correlativo_inicial_serie_edit" name="correlativo_inicial" min="1" required>
+                            <small class="form-text text-muted">Número desde el cual comenzarán las cotizaciones de esta serie</small>
                         </div>
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="activa_serie_edit" name="activa" value="1">
@@ -531,10 +543,11 @@
 @section('js')
     <script>
         // Funciones para editar serie
-        function editarSerie(id, serie, descripcion, activa, es_principal) {
+        function editarSerie(id, serie, descripcion, correlativo_inicial, activa, es_principal) {
             $('#formEditarSerie').attr('action', '{{ url("series") }}/' + id);
             $('#serie_edit').val(serie);
             $('#descripcion_serie_edit').val(descripcion);
+            $('#correlativo_inicial_serie_edit').val(correlativo_inicial);
             $('#activa_serie_edit').prop('checked', activa);
             $('#es_principal_serie_edit').prop('checked', es_principal);
             $('#modalEditarSerie').modal('show');

@@ -89,6 +89,10 @@ class RoleSeeder extends Seeder
                 'admin.documentos-clientes.show' => 'Ver documento',
                 'admin.documentos-clientes.destroy' => 'Eliminar documento',
             ],
+            'configuracion_documentos' => [
+                'admin.configuracion-documentos.edit' => 'Editar configuración de documentos',
+                'admin.configuracion-documentos.update' => 'Actualizar configuración de documentos',
+            ],
         ];
     }
 

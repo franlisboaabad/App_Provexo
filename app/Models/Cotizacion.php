@@ -81,22 +81,27 @@ class Cotizacion extends Model
      */
     public static function generarNumeroCotizacion($serieId = null): string
     {
+        $serieCotizacion = null;
+        $serie = 'COT';
+        $correlativoInicial = 1;
+
         // Si se proporciona un ID de serie, usarlo directamente
         if ($serieId) {
             $serieCotizacion = \App\Models\SerieCotizacion::find($serieId);
             if ($serieCotizacion && $serieCotizacion->activa) {
                 $serie = $serieCotizacion->serie;
-            } else {
-                $serie = 'COT';
+                $correlativoInicial = $serieCotizacion->correlativo_inicial ?? 1;
             }
         } else {
             // Obtener empresa principal y su serie principal
             $empresa = \App\Models\Empresa::where('es_principal', true)->first();
             if ($empresa) {
                 $seriePrincipal = $empresa->seriePrincipal;
-                $serie = $seriePrincipal ? $seriePrincipal->serie : 'COT';
-            } else {
-                $serie = 'COT';
+                if ($seriePrincipal) {
+                    $serieCotizacion = $seriePrincipal;
+                    $serie = $seriePrincipal->serie;
+                    $correlativoInicial = $seriePrincipal->correlativo_inicial ?? 1;
+                }
             }
         }
 
@@ -108,9 +113,12 @@ class Cotizacion extends Model
         if ($ultimaCotizacion) {
             // Extraer el número de la última cotización
             $partes = explode('-', $ultimaCotizacion->numero_cotizacion);
-            $numero = (int)end($partes) + 1;
+            $ultimoNumero = (int)end($partes);
+            // Usar el mayor entre el último número + 1 y el correlativo inicial
+            $numero = max($ultimoNumero + 1, $correlativoInicial);
         } else {
-            $numero = 1;
+            // Si no hay cotizaciones, usar el correlativo inicial
+            $numero = $correlativoInicial;
         }
 
         return $serie . '-' . $anio . '-' . str_pad($numero, 4, '0', STR_PAD_LEFT);

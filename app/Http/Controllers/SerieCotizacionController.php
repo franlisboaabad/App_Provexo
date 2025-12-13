@@ -55,6 +55,7 @@ class SerieCotizacionController extends Controller
                     'descripcion' => $validated['descripcion'] ?? null,
                     'activa' => $request->has('activa') && $request->activa ? true : ($validated['activa'] ?? true),
                     'es_principal' => $request->has('es_principal') && $request->es_principal ? true : false,
+                    'correlativo_inicial' => $validated['correlativo_inicial'] ?? 1,
                 ]);
 
                 Log::info('Serie de cotización creada exitosamente', ['serie' => $validated['serie']]);
@@ -87,6 +88,7 @@ class SerieCotizacionController extends Controller
             'descripcion' => ['nullable', 'string', 'max:255'],
             'activa' => ['nullable', 'boolean'],
             'es_principal' => ['nullable', 'boolean'],
+            'correlativo_inicial' => ['nullable', 'integer', 'min:1'],
         ]);
 
         // Validar que la serie sea única para la empresa (excluyendo la actual)
@@ -113,6 +115,7 @@ class SerieCotizacionController extends Controller
                     'descripcion' => $validated['descripcion'] ?? null,
                     'activa' => $request->has('activa') && $request->activa ? true : false,
                     'es_principal' => $request->has('es_principal') && $request->es_principal ? true : false,
+                    'correlativo_inicial' => $validated['correlativo_inicial'] ?? $serieCotizacion->correlativo_inicial ?? 1,
                 ]);
 
                 Log::info('Serie de cotización actualizada exitosamente', ['serie_id' => $serieCotizacion->id]);

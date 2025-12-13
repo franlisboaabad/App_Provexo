@@ -36,13 +36,13 @@ class CotizacionController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        
+
         Log::info('Listando cotizaciones', ['user_id' => $user->id, 'role' => $user->roles->pluck('name')->toArray()]);
 
         // Si el usuario es Cliente, mostrar solo sus cotizaciones
         if ($user->hasRole('Cliente')) {
             $cliente = $user->cliente;
-            
+
             if (!$cliente) {
                 return redirect()->route('profile.edit')
                     ->with('warning', 'Por favor completa tu perfil de cliente.');
@@ -268,11 +268,11 @@ class CotizacionController extends Controller
     public function show(Request $request, Cotizacion $cotizacione)
     {
         $user = $request->user();
-        
+
         // Si el usuario es Cliente, verificar que la cotización sea suya
         if ($user->hasRole('Cliente')) {
             $cliente = $user->cliente;
-            
+
             if (!$cliente || $cotizacione->cliente_id !== $cliente->id) {
                 abort(403, 'No tienes permiso para ver esta cotización.');
             }
@@ -521,11 +521,11 @@ class CotizacionController extends Controller
     public function pdf(Request $request, Cotizacion $cotizacione)
     {
         $user = $request->user();
-        
+
         // Si el usuario es Cliente, verificar que la cotización sea suya
         if ($user->hasRole('Cliente')) {
             $cliente = $user->cliente;
-            
+
             if (!$cliente || $cotizacione->cliente_id !== $cliente->id) {
                 abort(403, 'No tienes permiso para descargar esta cotización.');
             }
@@ -558,8 +558,11 @@ class CotizacionController extends Controller
             // Cargar cuentas bancarias activas
             $cuentasBancarias = $empresa->id ? $empresa->cuentasBancarias()->where('activa', true)->get() : collect([]);
 
+            // Obtener configuración de documentos
+            $configuracion = \App\Models\ConfiguracionDocumentosCotizacion::obtenerConfiguracion();
+
             // Renderizar la vista
-            $html = view('admin.cotizaciones.pdf', compact('cotizacione', 'empresa', 'cuentasBancarias'))->render();
+            $html = view('admin.cotizaciones.pdf', compact('cotizacione', 'empresa', 'cuentasBancarias', 'configuracion'))->render();
 
             // Configurar opciones de Dompdf
             $options = new Options();

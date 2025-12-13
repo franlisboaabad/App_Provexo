@@ -155,7 +155,6 @@
     <!-- Header -->
     <div class="header">
         <h1>PROVEXO+</h1>
-        <div class="subtitle">Sistema de Cotizaciones</div>
         <div class="contact">
             @if($empresa->id && $empresa->email)
                 Email: {{ $empresa->email }}
@@ -233,8 +232,8 @@
         <table>
             <thead>
                 <tr>
+                    <th style="width: 15%;">Código</th>
                     <th style="width: 35%;">Producto</th>
-                    <th style="width: 15%;">SKU</th>
                     <th class="text-center" style="width: 15%;">Cantidad</th>
                     <th class="text-right" style="width: 17.5%;">Precio Unitario</th>
                     <th class="text-right" style="width: 17.5%;">Total</th>
@@ -243,8 +242,8 @@
             <tbody>
                 @foreach($cotizacione->productos as $item)
                 <tr>
-                    <td>{{ $item->producto->descripcion }}</td>
                     <td>{{ $item->producto->codigo_producto }}</td>
+                    <td>{{ $item->producto->descripcion }}</td>
                     <td class="text-center">{{ $item->cantidad }} {{ $item->producto->unidad_medida ?? 'unidad' }}</td>
                     <td class="text-right">S/ {{ number_format($item->precio_unitario, 2) }}</td>
                     <td class="text-right"><strong>S/ {{ number_format($item->subtotal, 2) }}</strong></td>
@@ -271,11 +270,7 @@
                 <td class="text-right">-S/ {{ number_format($cotizacione->descuento, 2) }}</td>
             </tr>
             @endif
-            <tr>
-                <td colspan="2" style="padding: 0; height: 1px;">
-                    <div style="border-top: 2px solid #0066cc; margin: 8px 0;"></div>
-                </td>
-            </tr>
+
             <tr class="total-final">
                 <td style="text-align: left; padding-top: 8px;">TOTAL:</td>
                 <td class="text-right" style="padding-top: 8px;">S/ {{ number_format($cotizacione->total, 2) }}</td>
@@ -292,29 +287,24 @@
     @endif
 
     <!-- Observaciones -->
+    @if($configuracion && $configuracion->observaciones)
     <div class="info-section">
         <div class="terms-title">OBSERVACIONES:</div>
         <div class="terms">
-            <ul>
-                <li>Esta cotización tiene una validez de 30 días calendario desde la fecha de emisión.</li>
-                <li>Productos sujetos a stock, este documento solo fija los precios por treinta días, pero no garantiza la disponibilidad de lo cotizado.</li>
-                <li>En caso de que el cliente tenga facturas vencidas, no se procederá con el despacho de la orden de compra originada por esta cotización.</li>
-                <li>En caso de que el cliente tenga facturas vencidas, no aplican descuentos, promociones y precios especiales de buen pagador.</li>
-                <li>El tiempo de entrega que prevalece es el de este documento y no el de la OC del cliente, las entregas se realizarán como mínimo a partir de 1 día hábil después de confirmada la recepción de la OC del cliente por correo electrónico.</li>
-            </ul>
+            {!! $configuracion->observaciones !!}
         </div>
     </div>
+    @endif
 
     <!-- Condiciones de Pago -->
+    @if($configuracion && $configuracion->condiciones_pago)
     <div class="info-section">
         <div class="terms-title">CONDICIONES DE PAGO:</div>
         <div class="terms">
-            <ul>
-                <li>50% de adelanto por transferencia bancaria para confirmar el pedido.</li>
-                <li>50% restante al momento de confirmar el despacho.</li>
-            </ul>
+            {!! $configuracion->condiciones_pago !!}
         </div>
     </div>
+    @endif
 
     <!-- Cuentas Bancarias -->
     @if($empresa && $cuentasBancarias->count() > 0)
@@ -363,11 +353,7 @@
     @endif
 
     <!-- Footer -->
-    <div class="footer">
-        <div style="font-weight: bold; margin-bottom: 5px;">PROVEXO+</div>
-        <div>Esta cotización es válida por 30 días desde la fecha de emisión.</div>
-        <div style="margin-top: 5px;">Para consultas, contacte a nuestro equipo de ventas.</div>
-    </div>
+
 </body>
 </html>
 

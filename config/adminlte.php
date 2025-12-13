@@ -353,14 +353,46 @@ return [
             'icon' => 'fas fa-truck',
             'can' => 'admin.proveedores.index',
         ],
-        [
-            'text' => 'Empresas',
-            'route' => 'admin.empresas.index',
-            'icon' => 'fas fa-building',
-            'can' => 'admin.empresas.index',
-        ],
 
         ['header' => 'ADMINISTRACIÓN'],
+        [
+            'text' => 'Configuración',
+            'icon' => 'fas fa-cog',
+            'submenu' => [
+                [
+                    'text' => 'Empresa',
+                    'route' => 'admin.empresas.index',
+                    'icon' => 'fas fa-building',
+                    'can' => 'admin.empresas.index',
+                ],
+                [
+                    'text' => 'Datos de la Empresa',
+                    'route' => 'admin.empresa.principal',
+                    'icon' => 'fas fa-building',
+                    'can' => 'admin.empresas.index',
+                ],
+                [
+                    'text' => 'Series de Cotización',
+                    'route' => 'admin.empresa.principal',
+                    'icon' => 'fas fa-list-ol',
+                    'can' => 'admin.empresas.index',
+                    'active' => ['admin.empresas.show'],
+                ],
+                [
+                    'text' => 'Cuentas Bancarias',
+                    'route' => 'admin.empresa.principal',
+                    'icon' => 'fas fa-university',
+                    'can' => 'admin.empresas.index',
+                    'active' => ['admin.empresas.show'],
+                ],
+                [
+                    'text' => 'Configuración de Documentos',
+                    'route' => 'admin.configuracion-documentos.edit',
+                    'icon' => 'fas fa-file-alt',
+                    'can' => 'admin.configuracion-documentos.edit',
+                ],
+            ],
+        ],
         [
             'text' => 'Usuarios',
             'route' => 'admin.usuarios.index',

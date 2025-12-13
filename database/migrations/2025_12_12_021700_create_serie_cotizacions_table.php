@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('empresa_id')->constrained('empresas')->onDelete('cascade');
             $table->string('serie', 10)->comment('Código de la serie (ej: COT, FACT, etc.)');
+            $table->unsignedInteger('correlativo_inicial')->default(1)->comment('Número correlativo inicial para las cotizaciones de esta serie');
             $table->string('descripcion', 255)->nullable()->comment('Descripción de la serie');
             $table->boolean('activa')->default(true)->comment('Indica si la serie está activa');
             $table->boolean('es_principal')->default(false)->comment('Serie principal de la empresa');

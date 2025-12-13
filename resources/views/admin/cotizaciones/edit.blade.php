@@ -841,69 +841,76 @@
             }
         }
 
-        // Búsqueda en tiempo real
-        document.getElementById('buscador-productos').addEventListener('input', function(e) {
-            const busqueda = e.target.value.toLowerCase().trim();
-            const resultados = document.getElementById('resultados-busqueda');
+        // Búsqueda en tiempo real (solo si existe el elemento)
+        const buscadorProductos = document.getElementById('buscador-productos');
+        if (buscadorProductos) {
+            buscadorProductos.addEventListener('input', function(e) {
+                const busqueda = e.target.value.toLowerCase().trim();
+                const resultados = document.getElementById('resultados-busqueda');
+                if (!resultados) return;
 
-            if (busqueda.length < 2) {
-                resultados.style.display = 'none';
-                return;
-            }
+                if (busqueda.length < 2) {
+                    resultados.style.display = 'none';
+                    return;
+                }
 
-            const coincidencias = productosDisponibles.filter(p =>
-                p.codigo_producto.toLowerCase().includes(busqueda) ||
-                p.descripcion.toLowerCase().includes(busqueda)
-            ).slice(0, 10);
+                const coincidencias = productosDisponibles.filter(p =>
+                    p.codigo_producto.toLowerCase().includes(busqueda) ||
+                    p.descripcion.toLowerCase().includes(busqueda)
+                ).slice(0, 10);
 
-            if (coincidencias.length === 0) {
-                resultados.innerHTML = '<div class="list-group-item">No se encontraron productos</div>';
-                resultados.style.display = 'block';
-                return;
-            }
+                if (coincidencias.length === 0) {
+                    resultados.innerHTML = '<div class="list-group-item">No se encontraron productos</div>';
+                    resultados.style.display = 'block';
+                    return;
+                }
 
-            resultados.innerHTML = coincidencias.map(p => `
-                <div class="list-group-item list-group-item-action"
-                     onclick="agregarProductoRapido(${p.id})"
-                     style="cursor: pointer;">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <strong>${p.codigo_producto}</strong> - ${p.descripcion}
-                        </div>
-                        <div class="text-right">
-                            <small class="text-muted">S/ ${parseFloat(p.precio_venta).toFixed(2)}</small>
-                            <button class="btn btn-sm btn-success ml-2" onclick="event.stopPropagation(); agregarProductoRapido(${p.id});">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                resultados.innerHTML = coincidencias.map(p => `
+                    <div class="list-group-item list-group-item-action"
+                         onclick="agregarProductoRapido(${p.id})"
+                         style="cursor: pointer;">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>${p.codigo_producto}</strong> - ${p.descripcion}
+                            </div>
+                            <div class="text-right">
+                                <small class="text-muted">S/ ${parseFloat(p.precio_venta).toFixed(2)}</small>
+                                <button class="btn btn-sm btn-success ml-2" onclick="event.stopPropagation(); agregarProductoRapido(${p.id});">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
 
-            resultados.style.display = 'block';
-        });
+                resultados.style.display = 'block';
+            });
 
-        // Agregar producto con Enter
-        document.getElementById('buscador-productos').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const primeraResultado = document.querySelector('#resultados-busqueda .list-group-item-action');
-                if (primeraResultado) {
-                    primeraResultado.click();
+            // Agregar producto con Enter
+            buscadorProductos.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const primeraResultado = document.querySelector('#resultados-busqueda .list-group-item-action');
+                    if (primeraResultado) {
+                        primeraResultado.click();
+                    }
                 }
-            }
-        });
+            });
+        }
 
-        // Ocultar resultados al hacer clic fuera
-        document.addEventListener('click', function(e) {
-            const buscador = document.getElementById('buscador-productos');
-            const resultados = document.getElementById('resultados-busqueda');
-            const contenedor = buscador.closest('.position-relative');
+        // Ocultar resultados al hacer clic fuera (solo si existe el elemento)
+        if (buscadorProductos) {
+            document.addEventListener('click', function(e) {
+                const resultados = document.getElementById('resultados-busqueda');
+                if (!resultados) return;
+                const contenedor = buscadorProductos.closest('.position-relative');
+                if (!contenedor) return;
 
-            if (!contenedor.contains(e.target)) {
-                resultados.style.display = 'none';
-            }
-        });
+                if (!contenedor.contains(e.target)) {
+                    resultados.style.display = 'none';
+                }
+            });
+        }
 
         // Agregar producto rápido desde búsqueda
         function agregarProductoRapido(productoId) {
@@ -1101,35 +1108,45 @@
             $('#modalProductos').modal('show');
         }
 
-        // Búsqueda en modal
-        document.getElementById('buscador-modal').addEventListener('input', function(e) {
-            const busqueda = e.target.value.toLowerCase().trim();
-            document.querySelectorAll('.fila-producto-modal').forEach(fila => {
-                const codigo = fila.getAttribute('data-codigo').toLowerCase();
-                const descripcion = fila.getAttribute('data-descripcion').toLowerCase();
-                if (codigo.includes(busqueda) || descripcion.includes(busqueda)) {
-                    fila.style.display = '';
-                } else {
-                    fila.style.display = 'none';
-                }
-            });
+        // Búsqueda en modal (solo si existe el elemento)
+        $(document).ready(function() {
+            const buscadorModal = document.getElementById('buscador-modal');
+            if (buscadorModal) {
+                buscadorModal.addEventListener('input', function(e) {
+                    const busqueda = e.target.value.toLowerCase().trim();
+                    document.querySelectorAll('.fila-producto-modal').forEach(fila => {
+                        const codigo = fila.getAttribute('data-codigo')?.toLowerCase() || '';
+                        const descripcion = fila.getAttribute('data-descripcion')?.toLowerCase() || '';
+                        if (codigo.includes(busqueda) || descripcion.includes(busqueda)) {
+                            fila.style.display = '';
+                        } else {
+                            fila.style.display = 'none';
+                        }
+                    });
+                });
+            }
         });
 
         // Interceptar submit del formulario - abrir modal de fletes
-        document.getElementById('formCotizacion').addEventListener('submit', function(e) {
-            if (productosAgregados.size === 0) {
-                e.preventDefault();
-                alert('Debe agregar al menos un producto a la cotización');
-                return false;
+        $(document).ready(function() {
+            const formCotizacion = document.getElementById('formCotizacion');
+            if (formCotizacion) {
+                formCotizacion.addEventListener('submit', function(e) {
+                    if (productosAgregados.size === 0) {
+                        e.preventDefault();
+                        alert('Debe agregar al menos un producto a la cotización');
+                        return false;
+                    }
+
+                    e.preventDefault();
+
+                    // Llenar el modal de fletes con los productos
+                    llenarModalFletes();
+
+                    // Abrir el modal
+                    $('#modalCalculoFletes').modal('show');
+                });
             }
-
-            e.preventDefault();
-
-            // Llenar el modal de fletes con los productos
-            llenarModalFletes();
-
-            // Abrir el modal
-            $('#modalCalculoFletes').modal('show');
         });
 
         // Función para llenar el modal de fletes
