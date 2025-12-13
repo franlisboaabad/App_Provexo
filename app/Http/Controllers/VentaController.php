@@ -6,6 +6,7 @@ use App\Models\Venta;
 use App\Models\Cotizacion;
 use App\Models\GastoVenta;
 use App\Models\HistorialEstadoEntregaVenta;
+use App\Services\WhatsappService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -455,6 +456,8 @@ class VentaController extends Controller
         ]);
 
         try {
+            $estadoAnterior = $venta->estado_entrega;
+
             DB::transaction(function () use ($venta, $validated) {
                 // Actualizar estado de entrega
                 $venta->update([
@@ -475,8 +478,26 @@ class VentaController extends Controller
             // Recargar la venta para obtener los accessors actualizados
             $venta->refresh();
 
+            // Enviar notificación por WhatsApp si el estado cambió
+            if ($estadoAnterior !== $validated['estado_entrega']) {
+                try {
+                    WhatsappService::notificarCambioEstadoEntrega(
+                        $venta,
+                        $validated['estado_entrega'],
+                        $validated['observaciones'] ?? null
+                    );
+                } catch (\Exception $e) {
+                    // No fallar la actualización si el WhatsApp falla, solo loguear
+                    Log::warning('Error al enviar WhatsApp de notificación de estado', [
+                        'venta_id' => $venta->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
             Log::info('Estado de entrega actualizado', [
                 'venta_id' => $venta->id,
+                'estado_anterior' => $estadoAnterior,
                 'nuevo_estado' => $validated['estado_entrega']
             ]);
 
