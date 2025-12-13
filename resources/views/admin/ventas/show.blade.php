@@ -73,11 +73,45 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <th>Margen Bruto c/Transporte:</th>
+                                    <th>Estado de Entrega:</th>
                                     <td>
-                                        <span class="text-{{ $venta->margen_bruto_con_transporte >= 0 ? 'success' : 'danger' }}">
-                                            <strong>S/ {{ number_format($venta->margen_bruto_con_transporte, 2) }}</strong>
+                                        <span class="badge badge-{{ $venta->estado_entrega_badge_class ?? 'secondary' }}">
+                                            {{ $venta->estado_entrega_texto ?? 'Registro Creado' }}
                                         </span>
+                                    </td>
+                                </tr>
+                                @if($venta->codigo_seguimiento)
+                                <tr>
+                                    <th>Código de Seguimiento:</th>
+                                    <td>
+                                        <strong class="text-primary">{{ $venta->codigo_seguimiento }}</strong>
+                                    </td>
+                                </tr>
+                                @endif
+                                <tr>
+                                    <th>Total de Gastos:</th>
+                                    <td>
+                                        <strong class="text-danger">S/ {{ number_format($venta->total_gastos, 2) }}</strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Margen Bruto:</th>
+                                    <td>
+                                        <span class="text-{{ ($venta->margen_bruto_con_transporte ?? 0) >= 0 ? 'success' : 'danger' }}">
+                                            <strong>S/ {{ number_format($venta->margen_bruto_con_transporte ?? 0, 2) }}</strong>
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">Monto Vendido - (Costo Productos + Total Gastos)</small>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Margen Neto:</th>
+                                    <td>
+                                        <span class="text-{{ ($venta->margen_neto ?? 0) >= 0 ? 'success' : 'danger' }}">
+                                            <strong>S/ {{ number_format($venta->margen_neto ?? 0, 2) }}</strong>
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">Margen Bruto - Total Gastos</small>
                                     </td>
                                 </tr>
                             </table>
@@ -85,23 +119,104 @@
                     </div>
                 </div>
 
-                <!-- Información de Transporte -->
+                <!-- Información de Entrega -->
                 <div class="col-md-6">
-                    <div class="card border-info mb-3">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0"><i class="fas fa-truck"></i> Información de Transporte</h5>
+                    <div class="card border-success mb-3">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-truck"></i> Información de Entrega</h5>
                         </div>
                         <div class="card-body">
-                            <table class="table table-sm">
-                                <tr>
-                                    <th width="40%">Monto Transporte:</th>
-                                    <td>S/ {{ number_format($venta->monto_transporte, 2) }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Nombre Transporte:</th>
-                                    <td>{{ $venta->nombre_transporte ?? 'N/A' }}</td>
-                                </tr>
-                            </table>
+                            @if($venta->direccion_entrega || $venta->distrito || $venta->provincia || $venta->ciudad)
+                                <table class="table table-sm">
+                                    @if($venta->direccion_entrega)
+                                        <tr>
+                                            <th width="40%">Dirección:</th>
+                                            <td>{{ $venta->direccion_entrega }}</td>
+                                        </tr>
+                                    @endif
+                                    @if($venta->distrito)
+                                        <tr>
+                                            <th>Distrito:</th>
+                                            <td>{{ $venta->distrito }}</td>
+                                        </tr>
+                                    @endif
+                                    @if($venta->provincia)
+                                        <tr>
+                                            <th>Provincia:</th>
+                                            <td>{{ $venta->provincia }}</td>
+                                        </tr>
+                                    @endif
+                                    @if($venta->ciudad)
+                                        <tr>
+                                            <th>Ciudad:</th>
+                                            <td>{{ $venta->ciudad }}</td>
+                                        </tr>
+                                    @endif
+                                    @if($venta->codigo_postal)
+                                        <tr>
+                                            <th>Código Postal:</th>
+                                            <td>{{ $venta->codigo_postal }}</td>
+                                        </tr>
+                                    @endif
+                                    @if($venta->referencia)
+                                        <tr>
+                                            <th>Referencia:</th>
+                                            <td>{{ $venta->referencia }}</td>
+                                        </tr>
+                                    @endif
+                                </table>
+                            @else
+                                <p class="text-muted mb-0">No hay información de entrega registrada</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gastos de la Venta -->
+                <div class="col-md-6">
+                    <div class="card border-warning mb-3">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="mb-0"><i class="fas fa-receipt"></i> Gastos de la Venta</h5>
+                        </div>
+                        <div class="card-body">
+                            @if($venta->gastos->count() > 0)
+                                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                    <table class="table table-sm table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Descripción</th>
+                                                <th class="text-right">Monto</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($venta->gastos as $gasto)
+                                                <tr>
+                                                    <td>
+                                                        <strong>{{ $gasto->descripcion }}</strong>
+                                                        @if($gasto->fecha)
+                                                            <br><small class="text-muted">{{ $gasto->fecha->format('d/m/Y') }}</small>
+                                                        @endif
+                                                        @if($gasto->observaciones)
+                                                            <br><small class="text-muted">{{ $gasto->observaciones }}</small>
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <strong>S/ {{ number_format($gasto->monto, 2) }}</strong>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th>Total:</th>
+                                                <th class="text-right text-danger">S/ {{ number_format($venta->total_gastos, 2) }}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            @else
+                                <p class="text-muted mb-0">No hay gastos registrados</p>
+                            @endif
                         </div>
                     </div>
                 </div>

@@ -128,9 +128,9 @@
                                         @endif
                                     @endif
                                    <button type="button"
-                                           class="btn btn-sm btn-primary btn-block"
+                                           class="btn btn-sm btn-primary"
                                            onclick="abrirModalSeguimiento({{ $cotizacion->id }}, {{ $cotizacion->venta->id }})">
-                                       <i class="fas fa-shipping-fast"></i> Seguimiento de Venta
+                                       <i class="fas fa-shipping-fast"></i> Ver Seguimiento
                                    </button>
                                 </div>
                             </div>
@@ -223,6 +223,158 @@
                 margin-bottom: 20px;
             }
         }
+
+        /* Timeline de Seguimiento */
+        .timeline-seguimiento {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .timeline-marker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 2;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .timeline-item.completado .timeline-marker {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .timeline-item.actual .timeline-marker {
+            background-color: #28a745;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .timeline-item:not(.completado) .timeline-marker {
+            background-color: #e0e0e0;
+            color: #999;
+        }
+
+        .timeline-marker i {
+            font-size: 14px;
+        }
+
+        .timeline-content {
+            margin-left: 20px;
+            flex-grow: 1;
+        }
+
+        .timeline-estado {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .timeline-item.completado .timeline-estado,
+        .timeline-item.actual .timeline-estado {
+            color: #28a745;
+        }
+
+        .timeline-item:not(.completado) .timeline-estado {
+            color: #999;
+        }
+
+        .timeline-fecha {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .timeline-observaciones {
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .timeline-observaciones small {
+            font-style: italic;
+            color: #888;
+        }
+
+        .timeline-line {
+            width: 3px;
+            height: 40px;
+            background-color: #e0e0e0;
+            margin-left: 18.5px;
+            margin-bottom: 10px;
+        }
+
+        .timeline-item.completado + .timeline-line {
+            background-color: #28a745;
+        }
+
+        .info-producto {
+            border-top: 2px solid #e0e0e0;
+            padding-top: 20px;
+        }
+
+        .producto-icono {
+            width: 60px;
+            height: 60px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .producto-nombre {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .producto-sku {
+            font-size: 14px;
+            color: #666;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .timeline-seguimiento {
+                padding: 15px 0;
+            }
+
+            .timeline-marker {
+                width: 35px;
+                height: 35px;
+            }
+
+            .timeline-estado {
+                font-size: 14px;
+            }
+
+            .timeline-fecha {
+                font-size: 12px;
+            }
+        }
     </style>
 @stop
 
@@ -271,107 +423,126 @@
         }
 
         function mostrarInformacionSeguimiento(venta) {
-            // Determinar clase del badge según el estado
-            let estadoClass = 'badge-info';
-            let estadoIcon = 'fas fa-clock';
-            if (venta.estado_pedido === 'entregado') {
-                estadoClass = 'badge-success';
-                estadoIcon = 'fas fa-check-circle';
-            } else if (venta.estado_pedido === 'en_proceso') {
-                estadoClass = 'badge-warning';
-                estadoIcon = 'fas fa-cog fa-spin';
-            } else if (venta.estado_pedido === 'cancelado') {
-                estadoClass = 'badge-danger';
-                estadoIcon = 'fas fa-times-circle';
+            // Definir estados de entrega en orden
+            const estadosEntrega = [
+                { valor: 'registro_creado', texto: 'Recibimos tu pedido', icono: 'fa-inbox' },
+                { valor: 'recogido', texto: 'Pedido confirmado', icono: 'fa-check-circle' },
+                { valor: 'en_bodega_origen', texto: 'Preparando producto', icono: 'fa-box' },
+                { valor: 'salida_almacen', texto: 'Listo para enviar', icono: 'fa-shipping-fast' },
+                { valor: 'en_transito', texto: 'En tránsito', icono: 'fa-truck' },
+                { valor: 'en_reparto', texto: 'En reparto', icono: 'fa-route' },
+                { valor: 'entregado', texto: 'Pedido entregado', icono: 'fa-check-double' }
+            ];
+
+            // Obtener el índice del estado actual
+            const estadoActual = venta.estado_entrega || 'registro_creado';
+            const indiceActual = estadosEntrega.findIndex(e => e.valor === estadoActual);
+
+            // Formatear fecha desde string (formato: "dd mes - HH:mm hrs.")
+            const formatearFechaDesdeString = (fechaStr) => {
+                if (!fechaStr) return 'Fecha no disponible';
+                // fechaStr viene como "13/12/2025 17:28" o similar
+                const partes = fechaStr.split(' ');
+                if (partes.length >= 2) {
+                    const fechaPartes = partes[0].split('/'); // ["13", "12", "2025"]
+                    const horaPartes = partes[1].split(':'); // ["17", "28"]
+                    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                                  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+                    const dia = parseInt(fechaPartes[0]);
+                    const mes = meses[parseInt(fechaPartes[1]) - 1];
+                    const hora = horaPartes[0].padStart(2, '0');
+                    const minutos = horaPartes[1] ? horaPartes[1].padStart(2, '0') : '00';
+                    return `${dia} ${mes} - ${hora}:${minutos} hrs.`;
+                }
+                return fechaStr;
+            };
+
+            // Crear mapa de historial por estado
+            const historialMap = {};
+            if (venta.historial_estados_entrega && Array.isArray(venta.historial_estados_entrega)) {
+                venta.historial_estados_entrega.forEach(h => {
+                    historialMap[h.estado_entrega] = h;
+                });
             }
 
-            let html = `
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <div class="card border-primary">
-                            <div class="card-header bg-primary text-white text-center">
-                                <h4 class="mb-0">
-                                    <i class="${estadoIcon}"></i> Estado del Pedido
-                                </h4>
-                            </div>
-                            <div class="card-body text-center py-4">
-                                <h2>
-                                    <span class="badge ${estadoClass} badge-lg" style="font-size: 1.2rem; padding: 10px 20px;">
-                                        ${venta.estado_pedido_texto}
-                                    </span>
-                                </h2>
-                                <p class="text-muted mt-2 mb-0">Cotización: ${venta.cotizacion.numero}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            // Generar timeline
+            let timelineHtml = '<div class="timeline-seguimiento">';
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="card border-success">
-                            <div class="card-header bg-success text-white">
-                                <h6 class="mb-0"><i class="fas fa-money-bill-wave"></i> Información de Pago</h6>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-sm mb-0">
-                                    <tr>
-                                        <th width="50%">Monto Vendido:</th>
-                                        <td><strong class="text-success">S/ ${venta.monto_vendido}</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Adelanto:</th>
-                                        <td>S/ ${venta.adelanto}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Restante:</th>
-                                        <td><strong class="text-primary">S/ ${venta.restante}</strong></td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="card border-info">
-                            <div class="card-header bg-info text-white">
-                                <h6 class="mb-0"><i class="fas fa-truck"></i> Información de Transporte</h6>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-sm mb-0">
-                                    <tr>
-                                        <th width="50%">Monto Transporte:</th>
-                                        <td>S/ ${venta.monto_transporte}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Nombre Transporte:</th>
-                                        <td>${venta.nombre_transporte}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Fecha de Creación:</th>
-                                        <td>${venta.fecha_creacion}</td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            estadosEntrega.forEach((estado, index) => {
+                const estaCompletado = index <= indiceActual;
+                const esActual = index === indiceActual;
 
-            if (venta.nota) {
-                html += `
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="card border-warning">
-                                <div class="card-header bg-warning">
-                                    <h6 class="mb-0"><i class="fas fa-sticky-note"></i> Nota</h6>
+                // Buscar fecha en el historial
+                const historial = historialMap[estado.valor];
+                let fechaTexto = 'Fecha no disponible';
+
+                if (historial && historial.fecha_completa) {
+                    fechaTexto = formatearFechaDesdeString(historial.fecha_completa);
+                } else if (estaCompletado && index === 0) {
+                    // Si es el primer estado y está completado, usar fecha de creación de la venta
+                    fechaTexto = formatearFechaDesdeString(venta.fecha_creacion);
+                }
+
+                // Agregar observaciones si existen
+                let observacionesHtml = '';
+                if (historial && historial.observaciones) {
+                    observacionesHtml = `
+                        <div class="timeline-observaciones mt-1">
+                            <small class="text-muted">
+                                <i class="fas fa-comment"></i> ${historial.observaciones}
+                            </small>
+                        </div>
+                    `;
+                }
+
+                timelineHtml += `
+                    <div class="timeline-item ${estaCompletado ? 'completado' : ''} ${esActual ? 'actual' : ''}">
+                        <div class="timeline-marker">
+                            ${estaCompletado ? `<i class="fas fa-check"></i>` : `<i class="fas fa-circle"></i>`}
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-estado">${estado.texto}</div>
+                            <div class="timeline-fecha">${fechaTexto}</div>
+                            ${observacionesHtml}
+                        </div>
+                    </div>
+                    ${index < estadosEntrega.length - 1 ? '<div class="timeline-line"></div>' : ''}
+                `;
+            });
+
+            timelineHtml += '</div>';
+
+            // Información del producto (si está disponible)
+            let productoHtml = '';
+            if (venta.cotizacion && venta.cotizacion.numero) {
+                productoHtml = `
+                    <div class="info-producto mt-4">
+                        <h5 class="mb-3"><strong>Información del producto</strong></h5>
+                        <div class="d-flex align-items-center">
+                            <div class="producto-icono mr-3">
+                                <i class="fas fa-box fa-2x text-muted"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="producto-nombre mb-1">
+                                    <strong>Cotización: ${venta.cotizacion.numero}</strong>
                                 </div>
-                                <div class="card-body">
-                                    <p class="mb-0">${venta.nota}</p>
-                                </div>
+                                ${venta.codigo_seguimiento && venta.codigo_seguimiento !== 'N/A' ? `
+                                    <div class="producto-sku">
+                                        <strong>Código de Seguimiento:</strong> ${venta.codigo_seguimiento}
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
                     </div>
                 `;
             }
+
+            let html = `
+                <div class="seguimiento-container">
+                    ${timelineHtml}
+                    ${productoHtml}
+                </div>
+            `;
 
             $('#contenidoSeguimiento').html(html);
         }

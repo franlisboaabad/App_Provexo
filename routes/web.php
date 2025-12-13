@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
     // Administración de ventas
     Route::resource('ventas', VentaController::class)->names('admin.ventas');
     Route::post('ventas/{venta}/actualizar-estado-pedido', [VentaController::class, 'actualizarEstadoPedido'])->name('admin.ventas.actualizar-estado-pedido');
+    Route::post('ventas/{venta}/actualizar-estado-entrega', [VentaController::class, 'actualizarEstadoEntrega'])->name('admin.ventas.actualizar-estado-entrega');
 
     // Reportes
     Route::get('reportes', [ReporteController::class, 'dashboard'])->name('admin.reportes.dashboard');

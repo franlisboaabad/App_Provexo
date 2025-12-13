@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('numero_cotizacion', 100)->unique();
             $table->date('fecha_emision');
             $table->date('fecha_vencimiento')->nullable();
-            $table->enum('estado', ['pendiente', 'aprobada', 'rechazada', 'vencida'])->default('pendiente');
+            $table->enum('estado', ['pendiente', 'aprobada', 'rechazada', 'vencida', 'ganado', 'perdido'])->default('pendiente');
             $table->decimal('subtotal', 10, 2)->default(0);
             $table->decimal('descuento', 10, 2)->default(0);
             $table->decimal('impuesto_total', 10, 2)->default(0);

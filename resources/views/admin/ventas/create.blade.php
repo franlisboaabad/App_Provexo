@@ -51,7 +51,7 @@
                                         <strong>Cliente:</strong> {{ $cotizacion->cliente->user->name ?? 'N/A' }}
                                         <br>
                                         <strong>Monto Cotizado:</strong> S/ {{ number_format($cotizacion->total, 2) }}
-                                        <a href="{{ route('admin.cotizaciones.show', $cotizacion) }}" target="_blank" class="btn btn-sm btn-info ml-2">
+                                        <a href="{{ route('admin.cotizaciones.show', $cotizacion) }}" target="_blank" class="btn btn-sm btn-success text-black ml-2">
                                             <i class="fas fa-eye"></i> Ver Cotización
                                         </a>
                                     </div>
@@ -115,6 +115,22 @@
                         </div>
                     </div>
 
+                    <!-- Estado de Entrega -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="estado_entrega">Estado de Entrega</label>
+                            <select name="estado_entrega" id="estado_entrega" class="form-control">
+                                <option value="registro_creado" {{ old('estado_entrega', 'registro_creado') == 'registro_creado' ? 'selected' : '' }}>Registro Creado</option>
+                                <option value="recogido" {{ old('estado_entrega') == 'recogido' ? 'selected' : '' }}>Recogido</option>
+                                <option value="en_bodega_origen" {{ old('estado_entrega') == 'en_bodega_origen' ? 'selected' : '' }}>En Bodega Origen</option>
+                                <option value="salida_almacen" {{ old('estado_entrega') == 'salida_almacen' ? 'selected' : '' }}>Salida de Almacén</option>
+                                <option value="en_transito" {{ old('estado_entrega') == 'en_transito' ? 'selected' : '' }}>En Tránsito</option>
+                                <option value="en_reparto" {{ old('estado_entrega') == 'en_reparto' ? 'selected' : '' }}>En Reparto</option>
+                                <option value="entregado" {{ old('estado_entrega') == 'entregado' ? 'selected' : '' }}>Entregado</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <!-- Adelanto -->
                     <div class="col-md-6">
                         <div class="form-group">
@@ -142,35 +158,44 @@
                         </div>
                     </div>
 
-                    <!-- Transporte -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="monto_transporte">Transporte (S/)</label>
-                            <input type="number"
-                                   step="0.01"
-                                   min="0"
-                                   name="monto_transporte"
-                                   id="monto_transporte"
-                                   class="form-control"
-                                   value="{{ old('monto_transporte', 0) }}">
+                    <!-- Gastos de la Venta -->
+                    <div class="col-md-12">
+                        <div class="card border-warning">
+                            <div class="card-header bg-warning">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-receipt"></i> Gastos de la Venta
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="gastos-container">
+                                    <!-- Los gastos se agregarán dinámicamente aquí -->
+                                </div>
+                                <button type="button" class="btn btn-sm btn-success mt-2" id="btn-agregar-gasto">
+                                    <i class="fas fa-plus"></i> Agregar Gasto
+                                </button>
+                                <div class="mt-3">
+                                    <strong>Total de Gastos: <span id="total-gastos" class="text-danger">S/ 0.00</span></strong>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Nombre de Transporte -->
-                    <div class="col-md-12">
+                    <!-- Código de Seguimiento (autogenerado) -->
+                    <div class="col-md-6">
                         <div class="form-group">
-                            <label for="nombre_transporte">Nombre de Transporte</label>
+                            <label for="codigo_seguimiento">Código de Seguimiento</label>
                             <input type="text"
-                                   name="nombre_transporte"
-                                   id="nombre_transporte"
+                                   name="codigo_seguimiento"
+                                   id="codigo_seguimiento"
                                    class="form-control"
-                                   value="{{ old('nombre_transporte') }}"
-                                   placeholder="Ej: Transportes ABC S.A.">
+                                   value="{{ old('codigo_seguimiento') }}"
+                                   placeholder="Se generará automáticamente (ej: ORD-2025-0001)">
+                            <small class="form-text text-muted">Se generará automáticamente al guardar. Puedes personalizarlo si lo deseas.</small>
                         </div>
                     </div>
 
                     <!-- Nota -->
-                    <div class="col-md-12">
+                    <div class="col-md-6">
                         <div class="form-group">
                             <label for="nota">Nota</label>
                             <textarea name="nota"
@@ -178,6 +203,83 @@
                                       class="form-control"
                                       rows="3"
                                       placeholder="Observaciones sobre la venta...">{{ old('nota') }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Información de Entrega -->
+                    <div class="col-md-12">
+                        <div class="card border-info">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-truck"></i> Información de Entrega</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="direccion_entrega">Dirección de Entrega</label>
+                                            <textarea name="direccion_entrega"
+                                                      id="direccion_entrega"
+                                                      class="form-control"
+                                                      rows="2"
+                                                      placeholder="Dirección completa de entrega...">{{ old('direccion_entrega') }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="distrito">Distrito</label>
+                                            <input type="text"
+                                                   name="distrito"
+                                                   id="distrito"
+                                                   class="form-control"
+                                                   value="{{ old('distrito') }}"
+                                                   placeholder="Ej: San Isidro">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="provincia">Provincia</label>
+                                            <input type="text"
+                                                   name="provincia"
+                                                   id="provincia"
+                                                   class="form-control"
+                                                   value="{{ old('provincia') }}"
+                                                   placeholder="Ej: Lima">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="ciudad">Ciudad</label>
+                                            <input type="text"
+                                                   name="ciudad"
+                                                   id="ciudad"
+                                                   class="form-control"
+                                                   value="{{ old('ciudad') }}"
+                                                   placeholder="Ej: Lima">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="referencia">Referencia</label>
+                                            <textarea name="referencia"
+                                                      id="referencia"
+                                                      class="form-control"
+                                                      rows="2"
+                                                      placeholder="Referencias adicionales (ej: Cerca del parque, Edificio X, etc.)">{{ old('referencia') }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="codigo_postal">Código Postal</label>
+                                            <input type="text"
+                                                   name="codigo_postal"
+                                                   id="codigo_postal"
+                                                   class="form-control"
+                                                   value="{{ old('codigo_postal') }}"
+                                                   placeholder="Ej: 15001">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -223,6 +325,94 @@
                 const restante = Math.max(0, montoVendido - adelanto);
                 $('#restante').val('S/ ' + restante.toFixed(2));
             }
+
+            // Contador de gastos
+            let contadorGastos = 0;
+
+            // Agregar nuevo gasto
+            $('#btn-agregar-gasto').on('click', function() {
+                const gastoHtml = `
+                    <div class="card mb-2 gasto-item" data-gasto-index="${contadorGastos}">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Descripción <span class="text-danger">*</span></label>
+                                        <input type="text"
+                                               name="gastos[${contadorGastos}][descripcion]"
+                                               class="form-control form-control-sm"
+                                               placeholder="Ej: Transporte, Embalaje, Seguro..."
+                                               required>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Monto (S/) <span class="text-danger">*</span></label>
+                                        <input type="number"
+                                               step="0.01"
+                                               min="0"
+                                               name="gastos[${contadorGastos}][monto]"
+                                               class="form-control form-control-sm gasto-monto"
+                                               placeholder="0.00"
+                                               required>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Fecha</label>
+                                        <input type="date"
+                                               name="gastos[${contadorGastos}][fecha]"
+                                               class="form-control form-control-sm"
+                                               value="{{ date('Y-m-d') }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label>&nbsp;</label>
+                                        <button type="button" class="btn btn-sm btn-danger btn-block eliminar-gasto">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>Observaciones</label>
+                                        <textarea name="gastos[${contadorGastos}][observaciones]"
+                                                  class="form-control form-control-sm"
+                                                  rows="2"
+                                                  placeholder="Observaciones adicionales..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('#gastos-container').append(gastoHtml);
+                contadorGastos++;
+                actualizarTotalGastos();
+            });
+
+            // Eliminar gasto
+            $(document).on('click', '.eliminar-gasto', function() {
+                $(this).closest('.gasto-item').remove();
+                actualizarTotalGastos();
+            });
+
+            // Actualizar total de gastos
+            function actualizarTotalGastos() {
+                let total = 0;
+                $('.gasto-monto').each(function() {
+                    total += parseFloat($(this).val()) || 0;
+                });
+                $('#total-gastos').text('S/ ' + total.toFixed(2));
+            }
+
+            // Recalcular total cuando cambia un monto de gasto
+            $(document).on('input', '.gasto-monto', function() {
+                actualizarTotalGastos();
+            });
         });
     </script>
 @stop

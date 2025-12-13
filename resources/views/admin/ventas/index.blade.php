@@ -28,11 +28,13 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <div>
-                @can('admin.ventas.create')
-                    <a href="{{ route('admin.ventas.create') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> Nueva Venta
-                    </a>
-                @endcan
+                @if(!auth()->user()->hasRole('Cliente'))
+                    @can('admin.ventas.create')
+                        <a href="{{ route('admin.ventas.create') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Nueva Venta
+                        </a>
+                    @endcan
+                @endif
             </div>
             <div class="d-flex align-items-center gap-2">
                 <label for="filtroEstadoPedido" class="mb-0">
@@ -68,8 +70,12 @@
                             <th>Adelanto</th>
                             <th>Restante</th>
                             <th>Estado Pedido</th>
+                            <th>Estado Entrega</th>
+                            <th>Código Seguimiento</th>
                             <th>Estado Cotización</th>
-                            <th>Margen Bruto</th>
+                            @if(!auth()->user()->hasRole('Cliente'))
+                                <th>Margen Bruto</th>
+                            @endif
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -88,61 +94,101 @@
                                 <td>S/ {{ number_format($venta->adelanto, 2) }}</td>
                                 <td>S/ {{ number_format($venta->restante, 2) }}</td>
                                 <td>
-                                    <select class="form-control form-control-sm cambiar-estado-pedido"
-                                            data-venta-id="{{ $venta->id }}"
-                                            style="min-width: 120px;">
-                                        <option value="pendiente" {{ $venta->estado_pedido == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                        <option value="en_proceso" {{ $venta->estado_pedido == 'en_proceso' ? 'selected' : '' }}>En Proceso</option>
-                                        <option value="entregado" {{ $venta->estado_pedido == 'entregado' ? 'selected' : '' }}>Entregado</option>
-                                        <option value="cancelado" {{ $venta->estado_pedido == 'cancelado' ? 'selected' : '' }}>Cancelado</option>
-                                    </select>
+                                    @if(auth()->user()->hasRole('Cliente'))
+                                        <span class="badge badge-{{ $venta->estado_pedido == 'entregado' ? 'success' : ($venta->estado_pedido == 'cancelado' ? 'danger' : ($venta->estado_pedido == 'en_proceso' ? 'warning' : 'info')) }}">
+                                            {{ ucfirst(str_replace('_', ' ', $venta->estado_pedido)) }}
+                                        </span>
+                                    @else
+                                        <select class="form-control form-control-sm cambiar-estado-pedido"
+                                                data-venta-id="{{ $venta->id }}"
+                                                style="min-width: 120px;">
+                                            <option value="pendiente" {{ $venta->estado_pedido == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                            <option value="en_proceso" {{ $venta->estado_pedido == 'en_proceso' ? 'selected' : '' }}>En Proceso</option>
+                                            <option value="entregado" {{ $venta->estado_pedido == 'entregado' ? 'selected' : '' }}>Entregado</option>
+                                            <option value="cancelado" {{ $venta->estado_pedido == 'cancelado' ? 'selected' : '' }}>Cancelado</option>
+                                        </select>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if(auth()->user()->hasRole('Cliente'))
+                                        <span class="badge badge-{{ $venta->estado_entrega_badge_class ?? 'secondary' }}">
+                                            {{ $venta->estado_entrega_texto ?? 'Registro Creado' }}
+                                        </span>
+                                    @else
+                                        <select class="form-control form-control-sm cambiar-estado-entrega"
+                                                data-venta-id="{{ $venta->id }}"
+                                                style="min-width: 150px;">
+                                            <option value="registro_creado" {{ ($venta->estado_entrega ?? 'registro_creado') == 'registro_creado' ? 'selected' : '' }}>Registro Creado</option>
+                                            <option value="recogido" {{ ($venta->estado_entrega ?? '') == 'recogido' ? 'selected' : '' }}>Recogido</option>
+                                            <option value="en_bodega_origen" {{ ($venta->estado_entrega ?? '') == 'en_bodega_origen' ? 'selected' : '' }}>En Bodega Origen</option>
+                                            <option value="salida_almacen" {{ ($venta->estado_entrega ?? '') == 'salida_almacen' ? 'selected' : '' }}>Salida de Almacén</option>
+                                            <option value="en_transito" {{ ($venta->estado_entrega ?? '') == 'en_transito' ? 'selected' : '' }}>En Tránsito</option>
+                                            <option value="en_reparto" {{ ($venta->estado_entrega ?? '') == 'en_reparto' ? 'selected' : '' }}>En Reparto</option>
+                                            <option value="entregado" {{ ($venta->estado_entrega ?? '') == 'entregado' ? 'selected' : '' }}>Entregado</option>
+                                        </select>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($venta->codigo_seguimiento)
+                                        <span class="badge badge-primary">{{ $venta->codigo_seguimiento }}</span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
                                 </td>
                                 <td>
                                     <span class="badge badge-{{ $venta->cotizacion->estado == 'ganado' ? 'success' : 'danger' }}">
                                         {{ ucfirst($venta->cotizacion->estado) }}
                                     </span>
                                 </td>
+                                @if(!auth()->user()->hasRole('Cliente'))
+                                    <td>
+                                        <span class="text-{{ $venta->margen_bruto_con_transporte >= 0 ? 'success' : 'danger' }}">
+                                            S/ {{ number_format($venta->margen_bruto_con_transporte, 2) }}
+                                        </span>
+                                    </td>
+                                @endif
                                 <td>
-                                    <span class="text-{{ $venta->margen_bruto_con_transporte >= 0 ? 'success' : 'danger' }}">
-                                        S/ {{ number_format($venta->margen_bruto_con_transporte, 2) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-cog"></i> Acciones
-                                        </button>
-                                        <div class="dropdown-menu dropdown-menu-right">
-                                            @can('admin.ventas.show')
-                                                <a class="dropdown-item" href="{{ route('admin.ventas.show', $venta) }}">
-                                                    <i class="fas fa-eye text-info"></i> Ver Detalle
-                                                </a>
-                                            @endcan
-                                            @can('admin.ventas.edit')
-                                                <a class="dropdown-item" href="{{ route('admin.ventas.edit', $venta) }}">
-                                                    <i class="fas fa-edit text-warning"></i> Editar
-                                                </a>
-                                            @endcan
-                                            @can('admin.ventas.destroy')
-                                                <div class="dropdown-divider"></div>
-                                                <form action="{{ route('admin.ventas.destroy', $venta) }}"
-                                                      method="POST"
-                                                      style="display: inline-block;"
-                                                      onsubmit="return confirm('¿Está seguro de eliminar esta venta? Esta acción no se puede deshacer.');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; width: 100%; text-align: left; padding: 0.25rem 1.5rem;">
-                                                        <i class="fas fa-trash"></i> Eliminar
-                                                    </button>
-                                                </form>
-                                            @endcan
+                                    @if(auth()->user()->hasRole('Cliente'))
+                                        <a href="{{ route('admin.cotizaciones.show', $venta->cotizacion) }}" class="btn btn-sm btn-info" title="Ver Detalle de Cotización">
+                                            <i class="fas fa-eye"></i> Ver Detalle
+                                        </a>
+                                    @else
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <i class="fas fa-cog"></i> Acciones
+                                            </button>
+                                            <div class="dropdown-menu dropdown-menu-right">
+                                                @can('admin.ventas.show')
+                                                    <a class="dropdown-item" href="{{ route('admin.ventas.show', $venta) }}">
+                                                        <i class="fas fa-eye text-info"></i> Ver Detalle
+                                                    </a>
+                                                @endcan
+                                                @can('admin.ventas.edit')
+                                                    <a class="dropdown-item" href="{{ route('admin.ventas.edit', $venta) }}">
+                                                        <i class="fas fa-edit text-warning"></i> Editar
+                                                    </a>
+                                                @endcan
+                                                @can('admin.ventas.destroy')
+                                                    <div class="dropdown-divider"></div>
+                                                    <form action="{{ route('admin.ventas.destroy', $venta) }}"
+                                                          method="POST"
+                                                          style="display: inline-block;"
+                                                          onsubmit="return confirm('¿Está seguro de eliminar esta venta? Esta acción no se puede deshacer.');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="dropdown-item text-danger" style="border: none; background: none; width: 100%; text-align: left; padding: 0.25rem 1.5rem;">
+                                                            <i class="fas fa-trash"></i> Eliminar
+                                                        </button>
+                                                    </form>
+                                                @endcan
+                                            </div>
                                         </div>
-                                    </div>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" class="text-center">No hay ventas registradas</td>
+                                <td colspan="{{ auth()->user()->hasRole('Cliente') ? '12' : '13' }}" class="text-center">No hay ventas registradas</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -171,7 +217,7 @@
                 "pageLength": 25,
                 "responsive": true,
                 "columnDefs": [
-                    { "orderable": false, "targets": [10] } // Acciones no ordenable
+                    { "orderable": false, "targets": [{{ auth()->user()->hasRole('Cliente') ? '11' : '12' }}] } // Acciones no ordenable
                 ]
             });
 
@@ -237,6 +283,98 @@
                     select.val(select.data('estado-anterior'));
                     select.prop('disabled', false);
                 });
+            });
+
+            // Cambiar estado de entrega
+            $(document).on('change', '.cambiar-estado-entrega', function() {
+                const select = $(this);
+                const ventaId = select.data('venta-id');
+                const nuevoEstado = select.val();
+                const estadoAnterior = select.data('estado-anterior') || select.val();
+                
+                // Obtener el texto del estado seleccionado
+                const estadoTexto = select.find('option:selected').text();
+
+                // Revertir el cambio temporalmente
+                select.val(estadoAnterior);
+                select.prop('disabled', true);
+
+                // Mostrar modal para agregar observación
+                Swal.fire({
+                    title: 'Cambiar Estado de Entrega',
+                    html: `
+                        <p><strong>Nuevo Estado:</strong> ${estadoTexto}</p>
+                        <div class="form-group text-left">
+                            <label for="observacion_estado">Observaciones (opcional):</label>
+                            <textarea id="observacion_estado" class="form-control" rows="3" 
+                                      placeholder="Agregar observaciones sobre el cambio de estado..."></textarea>
+                        </div>
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Confirmar Cambio',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    preConfirm: () => {
+                        return {
+                            observaciones: document.getElementById('observacion_estado').value.trim()
+                        };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const observaciones = result.value.observaciones;
+
+                        // Realizar el cambio de estado
+                        fetch(`{{ url('ventas') }}/${ventaId}/actualizar-estado-entrega`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ 
+                                estado_entrega: nuevoEstado,
+                                observaciones: observaciones || null
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Éxito!',
+                                    text: data.message,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                                // Actualizar el estado en el select
+                                select.val(nuevoEstado);
+                                select.data('estado-anterior', nuevoEstado);
+                            } else {
+                                Swal.fire('Error', data.message || 'Error al actualizar el estado', 'error');
+                                // Revertir al estado anterior
+                                select.val(estadoAnterior);
+                            }
+                            select.prop('disabled', false);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire('Error', 'Error al actualizar el estado de entrega', 'error');
+                            // Revertir al estado anterior
+                            select.val(estadoAnterior);
+                            select.prop('disabled', false);
+                        });
+                    } else {
+                        // Si canceló, revertir el select
+                        select.val(estadoAnterior);
+                        select.prop('disabled', false);
+                    }
+                });
+            });
+
+            // Guardar estado inicial de entrega para poder revertir
+            $('.cambiar-estado-entrega').each(function() {
+                $(this).data('estado-anterior', $(this).val());
             });
         });
     </script>
