@@ -334,6 +334,7 @@
                 },
                 "pageLength": 25,
                 "order": [[0, "desc"]],
+                "autoWidth": false,
                 "columnDefs": [
                     { "orderable": false, "targets": [5, 6] } // Estado, Acciones no ordenables
                 ]

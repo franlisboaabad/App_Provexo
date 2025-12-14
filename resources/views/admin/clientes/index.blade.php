@@ -122,6 +122,7 @@
                 },
                 "pageLength": 25,
                 "order": [[0, "desc"]],
+                "autoWidth": false,
                 "columnDefs": [
                     { "orderable": false, "targets": [6] } // Acciones no ordenable
                 ]

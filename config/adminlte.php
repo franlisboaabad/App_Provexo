@@ -372,6 +372,7 @@ return [
         [
             'text' => 'Configuración',
             'icon' => 'fas fa-cog',
+            'can' => 'admin.configuracion.index',
             'submenu' => [
                 [
                     'text' => 'Empresa',

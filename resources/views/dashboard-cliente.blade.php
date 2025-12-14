@@ -5,7 +5,7 @@
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
         <h1>
-            <i class="fas fa-tachometer-alt text-primary"></i> Tablero Kanban
+            <i class="fas fa-tachometer-alt text-primary"></i> Dashboard
         </h1>
         <div>
             <span class="badge badge-info">Total: {{ $totalCotizaciones }} cotizaciones</span>
@@ -61,7 +61,7 @@
                                     @endif
                                     <div class="mt-2">
                                         <a href="{{ route('admin.cotizaciones.show', $cotizacion) }}"
-                                           class="btn btn-sm btn-info btn-block">
+                                           class="btn btn-sm btn-info btn-sm">
                                             <i class="fas fa-eye"></i> Ver Detalle
                                         </a>
                                     </div>

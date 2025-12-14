@@ -113,6 +113,115 @@ class WhatsappService
     }
 
 
+
+    /**
+     * Enviar notificación cuando se crea la venta
+     *
+     * @param \App\Models\Venta $venta
+     * @return bool
+     */
+    public static function notificarCreacionVenta($venta): bool
+    {
+        try {
+            // Cargar relaciones necesarias
+            $venta->load([
+                'cotizacion.cliente.user',
+                'cotizacion.productos.producto',
+                'cotizacion'
+            ]);
+
+            // Obtener número del cliente
+            $numeroCliente = $venta->cotizacion->cliente->celular ?? null;
+
+            if (!$numeroCliente) {
+                Log::warning('No se puede enviar WhatsApp: cliente sin número de celular', [
+                    'venta_id' => $venta->id,
+                    'cliente_id' => $venta->cotizacion->cliente_id ?? null
+                ]);
+                return false;
+            }
+
+            // Limpiar número (remover espacios, guiones, etc.)
+            $numeroCliente = preg_replace('/[^0-9]/', '', $numeroCliente);
+
+            // Asegurar que el número tenga código de país (si no lo tiene, agregar 51 para Perú)
+            if (strlen($numeroCliente) < 10) {
+                Log::warning('WhatsApp: Número muy corto, podría faltar código de país', [
+                    'numero_original' => $venta->cotizacion->cliente->celular ?? null,
+                    'numero_limpio' => $numeroCliente
+                ]);
+            }
+
+            // Si el número no empieza con código de país (51 para Perú), agregarlo
+            if (substr($numeroCliente, 0, 2) !== '51' && substr($numeroCliente, 0, 1) === '9') {
+                $numeroCliente = '51' . $numeroCliente;
+                Log::info('WhatsApp: Se agregó código de país al número', [
+                    'numero_original' => $venta->cotizacion->cliente->celular ?? null,
+                    'numero_final' => $numeroCliente
+                ]);
+            }
+
+            // Obtener información del cliente
+            $cliente = $venta->cotizacion->cliente ?? null;
+            $nombreCliente = $cliente->user->name ?? $cliente->empresa ?? 'Cliente';
+
+            // Obtener texto del estado inicial
+            $textoEstado = \App\Models\Venta::getTextoEstadoEntregaCliente($venta->estado_entrega);
+
+            // Construir mensaje de bienvenida
+            $message = "*Provexo+*\n\n";
+            $message .= "🎉 *¡Tu Pedido ha sido Confirmado!*\n\n";
+            $message .= "Hola " . $nombreCliente . ", nos complace informarte que tu pedido ha sido confirmado:\n\n";
+
+            // Información básica
+            $message .= "🆔 *Código de Seguimiento:* " . ($venta->codigo_seguimiento ?? 'N/A') . "\n";
+            $message .= "📄 *Cotización:* " . ($venta->cotizacion->numero_cotizacion ?? 'N/A') . "\n";
+            $message .= "💰 *Monto Total:* S/ " . number_format($venta->monto_vendido, 2) . "\n";
+            if ($venta->adelanto > 0) {
+                $message .= "💵 *Adelanto Recibido:* S/ " . number_format($venta->adelanto, 2) . "\n";
+                $message .= "📊 *Saldo Pendiente:* S/ " . number_format($venta->restante, 2) . "\n";
+            }
+            $message .= "📋 *Estado Actual:* " . $textoEstado . "\n";
+            $message .= "📅 *Fecha de Confirmación:* " . $venta->created_at->format('d/m/Y H:i') . "\n\n";
+
+            // Dirección de entrega (si está disponible)
+            if ($venta->direccion_entrega) {
+                $message .= "📍 *Dirección de Entrega:*\n";
+                $direccionCompleta = array_filter([
+                    $venta->direccion_entrega,
+                    $venta->distrito,
+                    $venta->provincia,
+                    $venta->ciudad
+                ]);
+                $message .= implode(', ', $direccionCompleta) . "\n";
+                if ($venta->referencia) {
+                    $message .= "🔖 *Referencia:* " . $venta->referencia . "\n";
+                }
+                $message .= "\n";
+            }
+
+            // Nota adicional si existe
+            if ($venta->nota) {
+                $message .= "📝 *Nota:*\n" . $venta->nota . "\n\n";
+            }
+
+            $message .= "Puedes revisar el estado de tu pedido en la plataforma: " . env('APP_URL') . "\n\n";
+            $message .= "Te mantendremos informado sobre cada actualización de tu pedido. 😊\n\n";
+            $message .= "Gracias por tu preferencia. ¡Estamos trabajando para ti!";
+
+            // Enviar mensaje
+            return self::send($message, $numeroCliente);
+
+        } catch (Exception $e) {
+            Log::error('Error al enviar notificación de creación de venta por WhatsApp', [
+                'venta_id' => $venta->id ?? null,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+
     /**
      * Envía notificación al cliente sobre el cambio de estado de entrega
      *

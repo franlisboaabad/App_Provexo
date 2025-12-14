@@ -73,9 +73,7 @@
                             <th>Estado Entrega</th>
                             <th>Código Seguimiento</th>
                             <th>Estado Cotización</th>
-                            @if(!auth()->user()->hasRole('Cliente'))
-                                <th>Margen Bruto</th>
-                            @endif
+                            <th>Margen Bruto</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -132,17 +130,19 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <span class="badge badge-{{ $venta->cotizacion->estado == 'ganado' ? 'success' : 'danger' }}">
+                                    <span class="badge badge-{{ $venta->cotizacion->estado == 'aprobada' ? 'success' : 'danger' }}">
                                         {{ ucfirst($venta->cotizacion->estado) }}
                                     </span>
                                 </td>
-                                @if(!auth()->user()->hasRole('Cliente'))
-                                    <td>
+                                <td>
+                                    @if(!auth()->user()->hasRole('Cliente'))
                                         <span class="text-{{ $venta->margen_bruto_con_transporte >= 0 ? 'success' : 'danger' }}">
                                             S/ {{ number_format($venta->margen_bruto_con_transporte, 2) }}
                                         </span>
-                                    </td>
-                                @endif
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
                                 <td>
                                     @if(auth()->user()->hasRole('Cliente'))
                                         <a href="{{ route('admin.cotizaciones.show', $venta->cotizacion) }}" class="btn btn-sm btn-info" title="Ver Detalle de Cotización">
@@ -184,7 +184,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ auth()->user()->hasRole('Cliente') ? '12' : '13' }}" class="text-center">No hay ventas registradas</td>
+                                <td colspan="13" class="text-center">No hay ventas registradas</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -212,8 +212,12 @@
                 "order": [[0, "desc"]],
                 "pageLength": 25,
                 "responsive": true,
+                "autoWidth": false,
                 "columnDefs": [
-                    { "orderable": false, "targets": [{{ auth()->user()->hasRole('Cliente') ? '11' : '12' }}] } // Acciones no ordenable
+                    { "orderable": false, "targets": [12] }, // Acciones no ordenable
+                    @if(auth()->user()->hasRole('Cliente'))
+                    { "visible": false, "targets": [11] } // Ocultar Margen Bruto para clientes
+                    @endif
                 ]
             });
 
@@ -287,7 +291,7 @@
                 const ventaId = select.data('venta-id');
                 const nuevoEstado = select.val();
                 const estadoAnterior = select.data('estado-anterior') || select.val();
-                
+
                 // Obtener el texto del estado seleccionado
                 const estadoTexto = select.find('option:selected').text();
 
@@ -302,7 +306,7 @@
                         <p><strong>Nuevo Estado:</strong> ${estadoTexto}</p>
                         <div class="form-group text-left">
                             <label for="observacion_estado">Observaciones (opcional):</label>
-                            <textarea id="observacion_estado" class="form-control" rows="3" 
+                            <textarea id="observacion_estado" class="form-control" rows="3"
                                       placeholder="Agregar observaciones sobre el cambio de estado..."></textarea>
                         </div>
                     `,
@@ -328,7 +332,7 @@
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             },
-                            body: JSON.stringify({ 
+                            body: JSON.stringify({
                                 estado_entrega: nuevoEstado,
                                 observaciones: observaciones || null
                             })

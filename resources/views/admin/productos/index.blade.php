@@ -245,6 +245,7 @@ PROD003,Producto Ejemplo 3,5.00,8.50,0,litro</pre>
                 },
                 "pageLength": 25,
                 "order": [[0, "desc"]],
+                "autoWidth": false,
                 "columnDefs": [
                     { "orderable": false, "targets": [8] } // Acciones no ordenable
                 ]

@@ -104,7 +104,6 @@ class VentaController extends Controller
             'monto_transporte' => ['nullable', 'numeric', 'min:0'], // Mantener para compatibilidad
             'nombre_transporte' => ['nullable', 'string', 'max:255'], // Mantener para compatibilidad
             'codigo_seguimiento' => ['nullable', 'string', 'max:100', 'unique:ventas,codigo_seguimiento'],
-            'estado_venta' => ['required', 'in:ganado,perdido'], // Estado de la cotización
             'direccion_entrega' => ['nullable', 'string'],
             'distrito' => ['nullable', 'string', 'max:100'],
             'provincia' => ['nullable', 'string', 'max:100'],
@@ -127,9 +126,9 @@ class VentaController extends Controller
                     throw new \Exception('Esta cotización ya tiene una venta asociada');
                 }
 
-                // Actualizar estado de la cotización
+                // Actualizar estado de la cotización a "aprobada" cuando se genera la venta
                 $cotizacion->update([
-                    'estado' => $validated['estado_venta']
+                    'estado' => 'aprobada'
                 ]);
 
                 // Generar código de seguimiento automático si no se proporciona
@@ -187,6 +186,17 @@ class VentaController extends Controller
 
                 return $venta;
             });
+
+            // Enviar notificación por WhatsApp al cliente
+            try {
+                WhatsappService::notificarCreacionVenta($venta);
+            } catch (\Exception $e) {
+                // No fallar la creación si el WhatsApp falla, solo loguear
+                Log::warning('Error al enviar WhatsApp de notificación de creación de venta', [
+                    'venta_id' => $venta->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
 
             return redirect()->route('admin.ventas.show', $venta)
                 ->with('success', 'Venta creada exitosamente');

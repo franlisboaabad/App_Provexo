@@ -43,7 +43,8 @@ class Dashboard extends Controller
             });
 
             $ordenesCotizadasVenta = $cotizaciones->filter(function($cotizacion) {
-                return $cotizacion->venta; // Con venta asociada
+                // Con venta asociada pero que NO esté en estado "entregado"
+                return $cotizacion->venta && $cotizacion->venta->estado_pedido !== 'entregado';
             });
 
             // Contar totales

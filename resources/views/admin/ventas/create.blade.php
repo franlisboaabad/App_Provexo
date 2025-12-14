@@ -74,18 +74,6 @@
                         </div>
                     </div>
 
-                    <!-- Estado de la Venta -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="estado_venta">Estado de la Venta <span class="text-danger">*</span></label>
-                            <select name="estado_venta" id="estado_venta" class="form-control" required>
-                                <option value="ganado" {{ old('estado_venta') == 'ganado' ? 'selected' : '' }}>Ganado</option>
-                                <option value="perdido" {{ old('estado_venta') == 'perdido' ? 'selected' : '' }}>Perdido</option>
-                            </select>
-                            <small class="form-text text-muted">Este será el nuevo estado de la cotización</small>
-                        </div>
-                    </div>
-
                     <!-- Monto Vendido -->
                     <div class="col-md-6">
                         <div class="form-group">

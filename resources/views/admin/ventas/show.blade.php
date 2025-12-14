@@ -245,7 +245,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <strong>Estado:</strong><br>
-                                    <span class="badge badge-{{ $venta->cotizacion->estado == 'ganado' ? 'success' : 'danger' }}">
+                                    <span class="badge badge-{{ $venta->cotizacion->estado == 'aprobada' ? 'success' : 'danger' }}">
                                         {{ ucfirst($venta->cotizacion->estado) }}
                                     </span>
                                 </div>
